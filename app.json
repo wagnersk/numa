@@ -2,6 +2,23 @@
   "expo": {
     "name": "numa",
     "slug": "numa",
-    "version": "1.0.0"
+    "scheme": "numa",
+    "version": "1.0.0",
+    "android": {
+      "package": "com.wagner.numa",
+      "edgeToEdgeEnabled": true,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#D2D2D2"
+      }
+    },
+    "ios": {
+      "bundleIdentifier": "com.wagner.numa",
+      "icon": "./assets/ios-icon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font"
+    ]
   }
 }

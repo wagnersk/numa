@@ -1,4 +1,4 @@
-package com.numa
+package com.wagner.numa
 
 import android.os.Build
 import android.os.Bundle
