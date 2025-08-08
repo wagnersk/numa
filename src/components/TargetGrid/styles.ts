@@ -4,28 +4,33 @@ import { colors, fontFamily } from "@/theme"
 
 export const styles = StyleSheet.create({
     container : {
-         width:'100%',
+        width:'100%',
         alignItems:'flex-end',
         paddingHorizontal:24,
     },
-    toogle : {
-        borderRadius:48,
-        backgroundColor:colors.gray[300],
-        flexDirection:'row',
-        padding:6,
+    toggleTrack: {
+        borderRadius: 16,
+        backgroundColor: colors.gray[300],
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        paddingLeft: 14,
+        paddingRight: 12,
         
-
     },
-     actived : {
-        backgroundColor:colors.white,
-        paddingHorizontal:8,
-        paddingVertical:4,
-        borderRadius:24,
+     toggleCircle: {
+        width: 44,
+        height: 28,
+        borderRadius: 14,
+        backgroundColor: colors.white,
+        justifyContent: "center",
+        alignItems: "center",
+        shadowColor: colors.white,
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+        elevation: 2,
+        position: "absolute",
+        left: 0,
+        
     },
-    desactived : {
-        backgroundColor:colors.gray[300],
-        paddingHorizontal:8,
-        paddingVertical:4,
-        borderRadius:24
-    }
  })

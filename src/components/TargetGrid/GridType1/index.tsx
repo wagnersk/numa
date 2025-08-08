@@ -10,6 +10,7 @@ import { TartgetGridProps } from ".."
 import { useRef, useState } from "react"
 import { Bullets } from "./bullets"
 import { router } from "expo-router"
+import BlurViewTargetCard from "@/components/BlurViewTargetCard "
 
 type Props = {
     data:TartgetGridProps[]
@@ -56,13 +57,16 @@ export function GridType1({data}:Props){
                 showsHorizontalScrollIndicator={false}
                 data={data}
                 renderItem={({item})=>(
-                  <TouchableOpacity 
-                   onPress={()=>{ router.navigate(`/stack/target-details/${item.id}`)}}
-                  style={[
-                    styles.listItem, 
-                    focusedId === item.id && { height:280, marginBottom:16 } ,
-                    { width: ITEM_WIDTH },
-                  ]}/>
+                  <BlurViewTargetCard
+                  key={item.id}
+                  photoUrl={item.photoUrl}
+                  targetName={item.targetName}
+                  percentage={item.percentage}
+                  id={item.id}
+                  width={ITEM_WIDTH}
+                  focus={focusedId === item.id}
+                  onPress={()=>{ router.navigate(`/stack/target-details/${item.id}`)}}
+                  />
                 )}
                 snapToInterval={snapInterval} // trava a rolagem
                 decelerationRate="fast"

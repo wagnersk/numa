@@ -12,7 +12,6 @@ export type HomeHeaderProps = {
 
 type Props = {
     data:HomeHeaderProps
-    
 }
 
 /* import Feather from '@expo/vector-icons/Feather'; */

@@ -1,12 +1,10 @@
 import {  View ,Text,TouchableOpacity  } from "react-native"
 
-import { styles } from "./styles"
-import { colors } from "@/theme/colors"
-import { MaterialIcons } from '@expo/vector-icons'
+
 import { ToogleButton } from "./toogleButton"
 import { GridType1 } from "./GridType1"
 import { GridType2 } from "./GridType2"
-import { useState } from "react"
+import { useState ,useEffect, use} from "react"
 
 
 export type TartgetGridProps = {
@@ -30,6 +28,11 @@ export function TargetGrid({data}:Props){
         
     }
 
+    useEffect(() => {
+
+        console.log("Grid mode changed to:", gridMode ? "GridType1" : "GridType2");
+    }, [gridMode])
+
 
     return ( 
         <View style={{ 
@@ -49,8 +52,6 @@ export function TargetGrid({data}:Props){
             <GridType2 data={data} />
             }
 
-
-                      
             </View>
     )
 }

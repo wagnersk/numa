@@ -4,14 +4,12 @@ import { colors, fontFamily } from "@/theme"
 
 export const styles = StyleSheet.create({
     container : {
-        flex:1,
-        padding:24,
-        justifyContent:'center',
-        alignItems:'center'
     },
     flatListStyle : {
         gap:24,
-    
+        width:'100%',
+        flex:1,
+        paddingHorizontal:24,
     },
     content : {
         backgroundColor:colors.red[400],

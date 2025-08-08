@@ -9,7 +9,8 @@ import {
     Urbanist_600SemiBold,
     Urbanist_500Medium,
     Urbanist_400Regular,
-    Urbanist_300Light_Italic
+    Urbanist_300Light_Italic,
+    Urbanist_300Light
 } from "@expo-google-fonts/urbanist"
 import { Loading } from "@/components/Loading"
 
@@ -21,11 +22,12 @@ import { Loading } from "@/components/Loading"
 
 export default function RootLayout(){
     const [fontsLoaded] = useFonts({   
-         Urbanist_700Bold,
-         Urbanist_600SemiBold,
-         Urbanist_500Medium,
-         Urbanist_400Regular,
-         Urbanist_300Light_Italic
+        Urbanist_700Bold,
+        Urbanist_600SemiBold,
+        Urbanist_500Medium,
+        Urbanist_400Regular,
+        Urbanist_300Light,
+        Urbanist_300Light_Italic
     })
 
     if(!fontsLoaded) {

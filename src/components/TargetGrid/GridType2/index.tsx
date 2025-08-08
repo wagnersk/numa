@@ -1,10 +1,9 @@
-import {  View , FlatList ,TouchableOpacity } from "react-native"
+import {  View , FlatList } from "react-native"
 
-import { colors } from "@/theme/colors"
-import { MaterialIcons } from '@expo/vector-icons'
 import { styles } from "./styles"
 import { TartgetGridProps } from ".."
 import { router } from "expo-router"
+import BlurViewTargetMiniCard from "@/components/BlurViewTargetMiniCard"
 
 type Props = {
     data:TartgetGridProps[]
@@ -12,10 +11,8 @@ type Props = {
 }
 
 export function GridType2({data}:Props){
+    console.log("renderizando GridType2 ");
     return ( 
-        <View   
-            style={styles.container}
-            >
             <FlatList
                 contentContainerStyle={styles.flatListStyle}
                 keyExtractor={(item) => item.id}
@@ -23,14 +20,17 @@ export function GridType2({data}:Props){
                 columnWrapperStyle={{ gap: 24 }} // espaço entre colunas
                 showsVerticalScrollIndicator={false}
                 data={data}
+
                 renderItem={({item})=>(
-                    <TouchableOpacity 
-                     onPress={()=>{ router.navigate(`/stack/target-details/${item.id}`)}}
-                    style={styles.targetItem}
+                    <BlurViewTargetMiniCard 
+                    photoUrl={item.photoUrl}
+                    targetName={item.targetName}
+                    percentage={item.percentage}
+                    id={item.id}
+                    onPress={()=>{ router.navigate(`/stack/target-details/${item.id}`)}}
                     />
                 )}
             >
              </FlatList>
-        </View>
     )
 }

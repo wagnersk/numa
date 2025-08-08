@@ -1,10 +1,15 @@
 import { HomeHeader } from "@/components/HomeHeader";
 import { Summary } from "@/components/Summary";
 import { TargetGrid } from "@/components/TargetGrid";
-import { fontFamily } from "@/theme";
-import { router } from "expo-router";
-import { useEffect } from "react";
-import { View, Text, Button} from "react-native";
+import { View } from "react-native";
+
+export type TartgetGridProps = {
+        id: string;
+        targetName: string;
+        percentage: number;
+        photoUrl: string;
+}
+
 
 export default function Index(){
 
@@ -12,25 +17,28 @@ export default function Index(){
         label:'Wagner',
         greetings:'Boa Tarde'
     }
+ 
+    
 
-    const targetData =[
+    const targetData:TartgetGridProps[] =[
         {
         id:`0`,
-        targetName:'Viagem para Santorini',
-        percentage:12,
-        photoUrl:''
+        targetName:'Viagem para Santorini',//21
+        percentage:22,
+        photoUrl: "https://images.unsplash.com/photo-1541348263662-e068662d82af?q=80&w=1287&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+
        },
        {
         id:`1`,
-        targetName:'Comprar meu carro novo',
-        percentage:12,
-        photoUrl:''
+        targetName:'Comprar carro novo',//18
+        percentage:52,
+        photoUrl: "https://images.unsplash.com/photo-1541348263662-e068662d82af?q=80&w=1287&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
        },
        {
         id:`2`,
-        targetName:'Mobiliar a casa',
-        percentage:12,
-        photoUrl:''
+        targetName:'Mobiliar a casa',//15
+        percentage:72,
+        photoUrl: "https://images.unsplash.com/photo-1541348263662-e068662d82af?q=80&w=1287&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
        },
        
     ]
