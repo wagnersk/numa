@@ -1,19 +1,138 @@
-import { router } from "expo-router";
-import { View, Text, Button} from "react-native";
+import React, { useEffect, useState } from 'react';
+import { View, Text, FlatList, Image, TextInput, ActivityIndicator, TouchableOpacity, Keyboard } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { StyleSheet } from "react-native";
+import AntDesign from '@expo/vector-icons/AntDesign';
+import { useRouter } from 'expo-router';
+import { colors, fontFamily } from '@/theme';
+import { Feather } from '@expo/vector-icons';
+import { UnsplashPhoto, UnsplashService } from '@/services/UnsplashService';
+import { useTargetStore } from '@/store/useImageStore';
 
-export default function SelectImage(){
+export default function GalleryScreen() {
+  const [photos, setPhotos] = useState<UnsplashPhoto[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [keyword, setKeyword] = useState('');
+  const setSelectedPhoto = useTargetStore(state => state.setTempTarget);
+  const router = useRouter();
 
-    return (
-        <View style={{ flex:1, justifyContent:'center' }}>
-            <Text>Selecionando a imagem</Text>
-                <Button 
-                    title='Selecionar a imagem'
-                    onPress={()=>{ router.navigate('/stack/target/confirm-image/444')}}
-                />
-            <Button 
-                title='Voltar'
-                onPress={router.back}
-             />
-        </View>
-    )
+  async function loadRandomPhotos() {
+    setLoading(true);
+    try {
+      const data = await UnsplashService.getRandomPhotos(12);
+      setPhotos(data);
+    } catch (err) {
+      console.error('Erro ao carregar fotos aleatórias:', err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function searchByKeyword() {
+    if (!keyword.trim()) return;
+    setLoading(true);
+    try {
+      const data = await UnsplashService.searchPhotos(keyword, 12);
+      setPhotos(data); 
+    } catch (err) {
+      console.error('Erro ao buscar fotos:', err);
+    } finally {
+      setLoading(false);
+      Keyboard.dismiss();
+    }
+  }
+
+  function handleConfirm(photo: UnsplashPhoto) {
+    setSelectedPhoto({ photo }); // salva no Zustand
+    router.push(`/stack/target/confirm-image/`); // passa o id para a tela de confirmação
+  }
+
+  useEffect(() => {
+    loadRandomPhotos();
+  }, []);
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()}>
+          <Feather name="arrow-left" size={24} color={colors.black} />
+        </TouchableOpacity>
+        <Text style={styles.title}>Selecione sua imagem</Text>
+        <View style={{ width: 24 }} /> 
+      </View>
+
+      <View style={styles.searchContainer}>
+        <AntDesign name="search1" size={20} color={colors.black} style={styles.icon} />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Buscar"
+          value={keyword}
+          onChangeText={setKeyword}
+          returnKeyType="search"
+          onSubmitEditing={searchByKeyword} 
+        />
+      </View>
+
+      {loading ? (
+        <ActivityIndicator size="large" color="#000" style={{ marginTop: 20 }} />
+      ) : (
+        <FlatList
+          data={photos}
+          keyExtractor={(item) => item.id}
+          numColumns={2}
+          columnWrapperStyle={styles.flatlistStyle}
+          showsVerticalScrollIndicator={false}
+          renderItem={({ item }) => (
+            <TouchableOpacity onPress={() => handleConfirm(item)}>
+              <Image source={{ uri: item.urls.small }} style={styles.image} />
+            </TouchableOpacity>
+          )}
+        />
+      )}
+    </SafeAreaView>
+  );
 }
+
+const styles = StyleSheet.create({
+  container : {
+    flex:1,
+    backgroundColor: colors.gray[100],
+    paddingHorizontal: 24,
+    gap:16
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  title: {
+    fontSize: 24,
+    fontFamily:fontFamily.regular,
+    color: colors.black,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 30,
+    paddingHorizontal: 20,
+    marginVertical: 24
+  },
+  icon: {
+    marginRight: 8
+  },
+  searchInput: {
+    flex: 1,
+    paddingVertical: 10,
+    fontSize: 14
+  },
+  flatlistStyle: {
+    gap:16,
+  },
+  image: {
+    width: 160,
+    height: 160,
+    borderRadius: 12,
+    marginBottom: 18
+  }
+});

@@ -2,7 +2,6 @@ import { Suspense } from "react"
 import { Stack, Tabs ,Slot} from "expo-router"
 import { colors } from "@/theme"
 import { MaterialIcons } from "@expo/vector-icons"
-
 import {
     useFonts,
     Urbanist_700Bold,
@@ -20,6 +19,7 @@ import { Loading } from "@/components/Loading"
  */
 
 export default function RootLayout(){
+
     const [fontsLoaded] = useFonts({   
          Urbanist_700Bold,
          Urbanist_600SemiBold,

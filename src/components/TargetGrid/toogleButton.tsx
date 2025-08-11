@@ -37,7 +37,7 @@ export function ToogleButton({
     }));
 
     useEffect(() => {
-        translateX.value = withSpring(gridMode ? maxTranslateX : 0);
+        translateX.value = withSpring(gridMode ? 0 : maxTranslateX );
     }, [gridMode, maxTranslateX, translateX]);
 
     return ( 
