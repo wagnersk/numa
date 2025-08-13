@@ -5,6 +5,7 @@ import { colors, fontFamily } from "@/theme"
 export const styles = StyleSheet.create({
     container : {
         justifyContent:'center',
+        gap:8,
     },
     listWrapper : {
     },

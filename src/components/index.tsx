@@ -80,10 +80,12 @@ export default function NewTargetScreen() {
 
   return (
     <TargetForm
-    onEditColor={() => router.push("/stack/target/select-color")}
-    onEditPhoto={() => router.push("/stack/target/select-image")}
-    paramsId={undefined}
-    editting={false}
+      isLoading={isLoading}
+      color={color}
+      photoUri={photo?.urls?.regular}
+      onEditColor={() => router.push("/stack/target/select-color")}
+      onEditPhoto={() => router.push("/stack/target/select-image")}
+      onSave={handleSave}
     />
   );
 }

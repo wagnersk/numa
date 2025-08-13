@@ -1,10 +1,11 @@
 import { Tabs } from "expo-router"
- // app/_layout.tsx (ou onde fica o TabsLayout)
+ 
 import { View, TouchableOpacity, StyleSheet } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { colors, fontFamily } from "@/theme"
+import { colors } from "@/theme"
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+
  function CustomTabBar({ state, descriptors, navigation }) {
   const insets = useSafeAreaInsets();
 
@@ -46,6 +47,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
             </TouchableOpacity>
           );
         }
+
         if (route.name === "analysis") {
             isFocused ? iconName = "pie-chart" : iconName = "pie-chart-outlined";
           return (
@@ -105,8 +107,7 @@ export default function TabsLayout(){
                 <Tabs.Screen name='index'   options={{ title:'Home'}}/>
                 <Tabs.Screen name='target' options={{title:'Metas'}}/>
                 <Tabs.Screen name='analysis' options={{title:'Análise'}}/>
-                 
-                </Tabs>
+            </Tabs>
 
     )
 } 
@@ -146,5 +147,6 @@ export const styles = StyleSheet.create({
     marginBottom: 32, // sobe para cima da barra
     borderWidth: 2, // borda branca
     borderColor: colors.white,
+    
   },
 });

@@ -6,24 +6,13 @@ import { Feather } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { colors } from "@/theme";
 import { useTargetStore } from "@/store/useImageStore";
+import { colorsList } from "@/app/utils/colorList";
 
 export default function SelectColorScreen() {
   const router = useRouter();
    const setSelectedPhoto = useTargetStore((state) => state.setTempTarget);
   
 
-  const colorsList = [
-    "#EE7752",
-    "#7B2FF7",
-    "#E6EB2F",
-    "#1CF47C",
-    "#E6007E",
-    "#996515",
-    "#F78FF7",
-    "#5F9EA0",
-    "#6B6B4E",
-    "#3B6FFF",
-  ]
 
   const [color, setColor] = useState<string | null>(null)
 

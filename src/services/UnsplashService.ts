@@ -1,4 +1,5 @@
-// services/UnsplashService.ts
+import * as FileSystem from 'expo-file-system';
+
 const BASE_URL = 'https://api.unsplash.com';
 const ACCESS_KEY = process.env.EXPO_PUBLIC_ACCESS_KEY;
 
@@ -6,9 +7,6 @@ if (!ACCESS_KEY) {
   throw new Error('A variável EXPO_PUBLIC_ACCESS_KEY não está definida no .env');
 }
 
-/**
- * Tipos do Unsplash
- */
 export interface UnsplashUser {
   id: string;
   username: string;
@@ -43,7 +41,7 @@ export interface UnsplashPhoto {
   description?: string | null;
   alt_description?: string | null;
   user: UnsplashUser;
-  current_user_collections: unknown[]; // pode refinar caso precise
+  current_user_collections: unknown[];
   urls: {
     raw: string;
     full: string;
@@ -55,6 +53,7 @@ export interface UnsplashPhoto {
     self: string;
     html: string;
     download: string;
+    download_location: string; // adicionei aqui
   };
 }
 
@@ -64,20 +63,35 @@ export interface UnsplashSearchResponse {
   results: UnsplashPhoto[];
 }
 
- 
 export const UnsplashService = {
-
   async getRandomPhotos(count = 10) {
     const res = await fetch(`${BASE_URL}/photos/random?count=${count}&client_id=${ACCESS_KEY}`);
     if (!res.ok) throw new Error('Erro ao buscar fotos aleatórias');
     return res.json() as Promise<UnsplashPhoto[]>;
   },
 
-  async searchPhotos(query, count = 10) {
+  async searchPhotos(query: string, count = 10) {
     const res = await fetch(`${BASE_URL}/search/photos?query=${encodeURIComponent(query)}&per_page=${count}&client_id=${ACCESS_KEY}`);
     if (!res.ok) throw new Error('Erro ao buscar fotos pela palavra-chave');
     const data = await res.json() as UnsplashSearchResponse;
     return data.results;
+  },
 
+  async downloadPhoto(photo: UnsplashPhoto) {
+    // 1. Registrar o download no Unsplash
+    const registerRes = await fetch(`${photo.links.download_location}?client_id=${ACCESS_KEY}`);
+    if (!registerRes.ok) throw new Error('Erro ao registrar download no Unsplash');
+    const { url } = await registerRes.json();
+
+    // 2. Baixar a imagem localmente
+    const fileUri = FileSystem.documentDirectory + `${photo.id}.jpg`;
+    await FileSystem.downloadAsync(url, fileUri);
+
+    return {
+      color: photo.color,
+      blur_hash: photo.blur_hash,
+      localUri: fileUri,
+      directUrl: url,
+    };
   }
 };

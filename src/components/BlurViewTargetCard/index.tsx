@@ -1,16 +1,14 @@
-import { View, Text, TouchableOpacity, ImageBackground } from "react-native";
+import { View, Text, TouchableOpacity, ImageBackground, DimensionValue } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { BlurView } from 'expo-blur';
 
 import { styles } from "./styles";
-import { colors, fontFamily } from "@/theme";
-import StaticCircularProgressComponent from "../StaticCircularProgressComponent";
 import Entypo from '@expo/vector-icons/Entypo';
 
 type Props = {
     onPress: () => void;
-    photoUrl: string;
-    targetName: string;
+    photo_url: string;
+    name: string;
     percentage: number;
     width: number;
     id: string;
@@ -19,8 +17,8 @@ type Props = {
 
 export default function BlurViewTargetCard({ 
     onPress,
-    photoUrl,
-    targetName,
+    photo_url,
+    name,
     percentage,
     width,
     focus,
@@ -33,20 +31,20 @@ export default function BlurViewTargetCard({
     function handleEditTarget() {
         console.log("Edit target with ID:", params.id);
     }
-/* 340 * 278 
-   240 * 307
-*/
+    console.log(`photo_url`,photo_url)
+
+
     return (
         <TouchableOpacity onPress={onPress}>
             <ImageBackground
-                source={{ uri: photoUrl }}
-                       style={[
-                styles.container,
-                {
-                    width: width,
-                    ...(focus && { height: 340, marginBottom: 8 }),
+                source={{ uri: photo_url }}
+                style={[
+                    styles.container,
+                    {
+                        width: width,
+                        ...(focus && { height: 340, marginBottom: 8 }),
 
-                }]}
+                    }]}
                 resizeMode="cover"
             >
                 <View style={styles.squareBlurCircle1}>
@@ -60,10 +58,10 @@ export default function BlurViewTargetCard({
                     <View style={styles.textInfoWrapper}>
                         <View style={styles.textInfoLeftWrapper}>
                             <View style={styles.textWrapper}>
-                                <Text style={styles.targetTittle}>{targetName}</Text>
+                                <Text style={styles.targetTittle}>{name}</Text>
                             </View>
                             <View style={styles.progressBackground}>
-                                <View style={[styles.progressColor,{width:`${percentage}%`}]}/>
+                                <View style={[styles.progressColor,{width: percentage as DimensionValue}]}/>
                             </View>
 
                             <View style={styles.textWrapper}>
@@ -80,4 +78,3 @@ export default function BlurViewTargetCard({
         </TouchableOpacity>
     );
 }
-/* Viagem para Santorini -> 22 maximo */

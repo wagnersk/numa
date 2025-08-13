@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { UnsplashPhoto } from "@/services/UnsplashService";
-
+ 
 export interface TempTargetData {
   photo: UnsplashPhoto | null;
   color: string | null;

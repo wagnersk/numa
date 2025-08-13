@@ -6,11 +6,13 @@ import {
    } from "react-native"
 
 import { styles } from "./styles"
-import { TartgetGridProps } from ".."
-import { useRef, useState } from "react"
+ import { useRef, useState } from "react"
 import { Bullets } from "./bullets"
 import { router } from "expo-router"
-import BlurViewTargetCard from "@/components/BlurViewTargetCard "
+import { TartgetGridProps } from ".."
+import BlurViewTargetCard from "@/components/BlurViewTargetCard"
+
+
 
 type Props = {
     data:TartgetGridProps[]
@@ -36,8 +38,7 @@ export function GridType1({data}:Props){
         setFocusedId(viewableItems[0].item.id);
       }
     }).current;
-
-
+ 
     return ( 
         <View   
             style={styles.container}
@@ -52,19 +53,19 @@ export function GridType1({data}:Props){
                 gap: SPACING,
                 alignItems: 'flex-end',
                 }}            
-                keyExtractor={(item) => item.id}
+                keyExtractor={(item) =>String(item.id)}
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 data={data}
                 renderItem={({item})=>(
                   <BlurViewTargetCard
                   key={item.id}
-                  photoUrl={item.photoUrl}
-                  targetName={item.targetName}
+                  photo_url={item.photo_url}
+                  name={item.name}
                   percentage={item.percentage}
-                  id={item.id}
+                  id={String(item.id)}
                   width={ITEM_WIDTH}
-                  focus={focusedId === item.id}
+                  focus={String(focusedId) === String(item.id)}
                   onPress={()=>{ router.navigate(`/stack/target-details/${item.id}`)}}
                   />
                 )}
@@ -79,10 +80,6 @@ export function GridType1({data}:Props){
                 data={data}
                 focusedId={focusedId}
               />
-           
-
-   
-      
         </View>
     )
 }

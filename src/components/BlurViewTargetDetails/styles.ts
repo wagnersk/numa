@@ -60,7 +60,7 @@ export const styles = StyleSheet.create({
         fontFamily: fontFamily.regular
     },
     targetValue : {
-        fontSize: 24,
+        fontSize: 22,
         color: colors.black,
         fontFamily: fontFamily.regular
     },

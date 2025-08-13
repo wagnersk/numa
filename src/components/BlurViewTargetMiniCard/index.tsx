@@ -9,7 +9,7 @@ import StaticCircularProgressComponent from "../StaticCircularProgressComponent"
 
 type Props = {
     onPress: () => void;
-    photoUrl: string;
+    photo_url: string;
     targetName: string;
     percentage: number;
     id: string;
@@ -17,7 +17,7 @@ type Props = {
 
 export default function BlurViewTargetMiniCard({ 
     onPress,
-    photoUrl,
+    photo_url,
     targetName,
     percentage,
     id
@@ -36,7 +36,7 @@ export default function BlurViewTargetMiniCard({
             onPress={onPress}
         >
             <ImageBackground
-                source={{ uri: photoUrl }}
+                source={{ uri: photo_url }}
                 style={styles.imageStyle}
                 resizeMode="cover"
             >

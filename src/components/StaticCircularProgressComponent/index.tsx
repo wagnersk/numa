@@ -85,7 +85,7 @@ export default function ({
             color: colors.black,
           }}
         >
-          {fill.toFixed(0)}%
+          {fill}
         </Text>
       </BlurView>
     </View>

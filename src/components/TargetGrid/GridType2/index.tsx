@@ -15,7 +15,7 @@ export function GridType2({data}:Props){
     return ( 
             <FlatList
                 contentContainerStyle={styles.flatListStyle}
-                keyExtractor={(item) => item.id}
+                keyExtractor={(item) =>String(item.id)}
                 numColumns={2} // 2 itens por linha
                 columnWrapperStyle={{ gap: 24 }} // espaço entre colunas
                 showsVerticalScrollIndicator={false}
@@ -23,10 +23,10 @@ export function GridType2({data}:Props){
 
                 renderItem={({item})=>(
                     <BlurViewTargetMiniCard 
-                    photoUrl={item.photoUrl}
-                    targetName={item.targetName}
+                    photo_url={item.photo_url}
+                    targetName={item.name}
                     percentage={item.percentage}
-                    id={item.id}
+                    id={String(item.id)}
                     onPress={()=>{ router.navigate(`/stack/target-details/${item.id}`)}}
                     />
                 )}

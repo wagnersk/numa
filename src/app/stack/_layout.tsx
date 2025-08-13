@@ -1,19 +1,30 @@
-import { Stack  } from "expo-router"
-import { colors } from "@/theme"
- 
-export default function StackLayout(){
- 
-    return ( 
-            <Stack
-                screenOptions={{
-                    headerShown:false,
-                    contentStyle:{ backgroundColor: colors.white
+        import { Stack  } from "expo-router"
+        import { colors } from "@/theme"
+        
+        export default function StackLayout(){
+        
+            return ( 
+                    <Stack
+                        screenOptions={{
+                            headerShown:false,
+                            contentStyle:{ backgroundColor: colors.white
+                                
+                            }
+                        }}
+                    >
+                        <Stack.Screen name='settings'  />
+
+                        <Stack.Screen name="analysis/index" />
+                        <Stack.Screen name="analysis/transactions/[id]" />
+
+                        <Stack.Screen name="index/[id]" />
+                        <Stack.Screen name="index/target-details" />
                         
-                    }
-                }}
-            >
-                <Stack.Screen name='settings'  />
-             </Stack>
- 
-    )
-}
+                        <Stack.Screen name="target/select-image" />
+                        <Stack.Screen name="target/select-color" />
+                        <Stack.Screen name="target/confirm-image" />
+     
+                    </Stack>
+        
+            )
+        }

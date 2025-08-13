@@ -11,8 +11,8 @@ export default function PreviewImage() {
   const setSelectedPhoto = useTargetStore((state) => state.setTempTarget);
 
   function handleSelectPhoto(photo) {
-    setSelectedPhoto({ photo }); // atualiza o Zustand (opcional aqui, pois já tem a foto)
-    router.navigate(`/tabs/target`); // volta para a tela principal
+    setSelectedPhoto({ photo }); // atualiza o Zustand (opcional aqui, pois já tem a foto)  
+    router.dismissTo("/tabs/target");
   }
 
   if (!photo) {

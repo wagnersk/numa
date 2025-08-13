@@ -5,40 +5,44 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import { styles } from "./styles";
 import { colors, fontFamily } from "@/theme";
 import { AnimatedCircularProgress } from "react-native-circular-progress";
+import { TartgetGridProps } from "../TargetGrid";
+import { formatTimestampDDMMYYYY } from "@/utils/formatTimestampDDMMYYYY";
+import { router } from "expo-router";
 
 
 export type Props = {
     id: string
+    data:TartgetGridProps
 }
-
  
-export default function BlurViewTargetDetails(
-    { id }:Props
-) {
-
+export default function BlurViewTargetDetails({
+        id, 
+        data
+     }:Props
+    ) {
     function handleDeleteTarget() {
         console.log("Delete target with ID:", id);
-
     }
     function handleEditTarget() {
         console.log("Edit target with ID:", id);
+        router.push(`/no-tabs/target/${id}`)
     }
-
+    console.log(data.percentage)
+    
     return (
                <View style={styles.container}>
-                <View style={styles.squareBlurCircle1} >
+                <View style={styles.squareBlurCircle1}>
                     <AnimatedCircularProgress
                         style={styles.animatedCircularProgress}
                         size={140}
                         width={6}
-                        fill={29}
+                        fill={data.percentage}
                         lineCap="round"
                         rotation={0}
                         tintColor={colors.green[100]}
                         backgroundColor={colors.gray[100]}
                         delay={500}
                         >
-                
                       {
                         (fill) => (
                             <BlurView
@@ -47,7 +51,7 @@ export default function BlurViewTargetDetails(
                                 style={styles.circleBlurBackgroud} 
                                 >
                             <Text  style={[styles.circleBlurText,{fontSize:20,fontFamily:fontFamily.regular}]} > 
-                                { fill.toFixed(0) }%
+                                {fill.toFixed(2)} %
                             </Text>
                         </BlurView>
                         )
@@ -62,28 +66,28 @@ export default function BlurViewTargetDetails(
                     >
                    <View style={styles.targetInfoWrapper}>
                         <View style={styles.targetHeader}>
-                                <Text style={styles.targetGoal} >Viagem para Santorini</Text>
+                                <Text style={styles.targetGoal}>{data.name}</Text>
                         </View>
 
                         <View style={styles.targetContent}>
                             <View style={styles.targetInfoContent}>
                                 <Text style={styles.targetTittle}>Saldo</Text>
-                                <Text style={styles.targetValue}>R$ 2.000</Text>
+                                <Text style={styles.targetValue}>{data.currency}</Text>
                             </View>
                             <View style={styles.targetInfoContent}>
                                 <Text  style={styles.targetTittle}>Objetivo</Text>
-                                <Text  style={styles.targetValue}>R$ 15.000</Text>
+                                <Text  style={styles.targetValue}>{data.target}</Text>
                             </View>
                         </View>
 
                         <View style={styles.targetContent}>
                             <View style={styles.targetInfoContent}>
                                 <Text style={styles.targetTittle}>Início</Text>
-                                <Text style={styles.targetValue}>30/11/2024</Text>
+                                <Text style={styles.targetValue}>{formatTimestampDDMMYYYY(data.start_date)}</Text>
                             </View>
                             <View style={styles.targetInfoContent}>
                                 <Text  style={styles.targetTittle}>Fim</Text>
-                                <Text style={styles.targetValue}>30/11/2025</Text>
+                                <Text style={styles.targetValue}>{formatTimestampDDMMYYYY(data.end_date)}</Text>
                             </View>
                         </View>
 
@@ -96,7 +100,6 @@ export default function BlurViewTargetDetails(
                                 <Text style={styles.buttonText}>Editar</Text>
                             </TouchableOpacity>
                         </View>
-                        
                     </View>
                </BlurView>
               </View>
