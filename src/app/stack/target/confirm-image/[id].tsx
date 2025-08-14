@@ -1,27 +1,34 @@
 import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { colors, fontFamily } from "@/theme";
 import { useTargetStore } from "@/store/useImageStore";
+import { useEffect, useState } from "react";
+import { UnsplashPhoto, UnsplashService } from "@/services/UnsplashService";
+import { Blurhash } from "react-native-blurhash";
 
 export default function PreviewImage() {
-  // Pega a foto direto do Zustand
-  const photo = useTargetStore((state) => state.target.photo);
   const setSelectedPhoto = useTargetStore((state) => state.setTempTarget);
+  const [getPhoto, setGetPhoto] = useState<UnsplashPhoto | null>(null);
+  const params = useLocalSearchParams<{ id: string }>();
 
-  function handleSelectPhoto(photo) {
-    setSelectedPhoto({ photo }); // atualiza o Zustand (opcional aqui, pois já tem a foto)  
-    router.dismissTo("/tabs/target");
+  function handleSelectPhoto(photo: UnsplashPhoto) {
+    setSelectedPhoto({ photo });
+
+    router.dismissAll();
   }
 
-  if (!photo) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <Text style={styles.errorText}>Nenhuma imagem selecionada.</Text>
-      </SafeAreaView>
-    );
+  async function getSelectedPhoto(id: string) {
+    const photo = await UnsplashService.getPhotoById(id);
+    setGetPhoto(photo);
   }
+
+  useEffect(() => {
+    if (params.id) {
+      getSelectedPhoto(params.id);
+    }
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -33,18 +40,35 @@ export default function PreviewImage() {
         <View style={{ width: 24 }} />
       </View>
 
-      <View style={styles.imageWrapper}>
-        <Image source={{ uri: photo.urls.regular }} style={styles.image} resizeMode="cover" />
+        <View style={styles.imageWrapper}>
+      {getPhoto && <>
+          {/* Imagem real por cima */}
+          <Blurhash
+          blurhash={getPhoto.blur_hash}
+          style={styles.image}
+          decodeWidth={32}
+          decodeHeight={32}
+          decodeAsync
+          />
+        <Image
+          source={{ uri: getPhoto.urls.regular }}
+          style={[styles.image, StyleSheet.absoluteFill]}
+          resizeMode="cover"
+          />
+        </>
+      }
       </View>
 
-      <TouchableOpacity onPress={() => handleSelectPhoto(photo)} style={styles.button}>
+      <TouchableOpacity
+        onPress={() => handleSelectPhoto(getPhoto!)}
+        style={styles.button}
+      >
         <Text style={styles.buttonText}>OK</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
 }
 
-// Seu styles (sem alterações)
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -68,6 +92,8 @@ const styles = StyleSheet.create({
   imageWrapper: {
     flex: 1,
     marginBottom: 16,
+    borderRadius: 20,
+    overflow: "hidden",
   },
   image: {
     width: "100%",
@@ -86,9 +112,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: fontFamily.regular,
     color: colors.black,
-  },
-  errorText: {
-    fontSize: 16,
-    color: colors.red[500],
   },
 });

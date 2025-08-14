@@ -11,7 +11,6 @@ type Props = {
 }
 
 export function GridType2({data}:Props){
-    console.log("renderizando GridType2 ");
     return ( 
             <FlatList
                 contentContainerStyle={styles.flatListStyle}
@@ -23,11 +22,10 @@ export function GridType2({data}:Props){
 
                 renderItem={({item})=>(
                     <BlurViewTargetMiniCard 
-                    photo_url={item.photo_url}
-                    targetName={item.name}
-                    percentage={item.percentage}
-                    id={String(item.id)}
-                    onPress={()=>{ router.navigate(`/stack/target-details/${item.id}`)}}
+                   
+                    item={item}
+
+                    onPress={()=>{ router.push(`/stack/target-details/${item.id}`)}}
                     />
                 )}
             >

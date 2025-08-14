@@ -7,6 +7,13 @@ export type TransactionCreate = {
   observation?: string | null;
 };
 
+export type TransactionUpdate = {
+  target_id: number;
+  amount?: number;
+  observation?: string | null;
+};
+
+
 export function useTransactionsDatabase() {
   const database = useSQLiteContext();
 
@@ -21,7 +28,16 @@ export function useTransactionsDatabase() {
       $amount: data.amount,
       $observation: data.observation ?? null,
     });
+
+    await statement.finalizeAsync();
+
+  }
+ 
+
+  async function remove(id: number) {
+    await database.runAsync(`DELETE FROM transactions WHERE id = ?`, [id]);
   }
 
-  return { create };
+
+  return { create, remove };
 }

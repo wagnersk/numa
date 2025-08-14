@@ -64,6 +64,13 @@ export interface UnsplashSearchResponse {
 }
 
 export const UnsplashService = {
+
+    async getPhotoById(id: string) {
+    const res = await fetch(`${BASE_URL}/photos/${id}?client_id=${ACCESS_KEY}`);
+    if (!res.ok) throw new Error('Erro ao buscar foto por ID');
+    return res.json() as Promise<UnsplashPhoto>;
+  },
+  
   async getRandomPhotos(count = 10) {
     const res = await fetch(`${BASE_URL}/photos/random?count=${count}&client_id=${ACCESS_KEY}`);
     if (!res.ok) throw new Error('Erro ao buscar fotos aleatórias');
@@ -79,19 +86,46 @@ export const UnsplashService = {
 
   async downloadPhoto(photo: UnsplashPhoto) {
     // 1. Registrar o download no Unsplash
-    const registerRes = await fetch(`${photo.links.download_location}?client_id=${ACCESS_KEY}`);
-    if (!registerRes.ok) throw new Error('Erro ao registrar download no Unsplash');
+
+    const { color , blur_hash} = photo;
+    
+    const registerRes = await fetch(
+      `${photo.links.download_location}?client_id=${ACCESS_KEY}`
+    );
+    if (!registerRes.ok) throw new Error("Erro ao registrar download no Unsplash");
     const { url } = await registerRes.json();
 
-    // 2. Baixar a imagem localmente
-    const fileUri = FileSystem.documentDirectory + `${photo.id}.jpg`;
-    await FileSystem.downloadAsync(url, fileUri);
+    const direct_url = url
+    
+    const file_name = `${photo.id}.jpg`;
+    
+    const local_uri = `${FileSystem.documentDirectory}${file_name}`
+
+    await FileSystem.downloadAsync(direct_url, local_uri);
 
     return {
-      color: photo.color,
-      blur_hash: photo.blur_hash,
-      localUri: fileUri,
-      directUrl: url,
-    };
+      file_name: file_name,  
+      color: color,
+      blur_hash: blur_hash,
+      direct_url: direct_url,
+    }
+  },
+
+  async deleteLocalPhoto(file_name: string | null) {
+  if (!file_name) return;
+
+  try {
+    const localUri = `${FileSystem.documentDirectory}${file_name}`;
+    
+    const fileInfo = await FileSystem.getInfoAsync(localUri);
+    if (fileInfo.exists) {
+      await FileSystem.deleteAsync(localUri, { idempotent: true });
+      console.log(`Foto deletada: ${file_name}`);
+    }
+  } catch (error) {
+    console.log("Erro ao deletar foto local:", error);
   }
-};
+}
+  
+  
+  }

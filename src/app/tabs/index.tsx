@@ -4,7 +4,7 @@ import { TargetGrid, TartgetGridProps } from "@/components/TargetGrid";
 import { useTargetDatabase } from "@/database/useTargetDatabase";
 import { numberToCurrency } from "@/utils/numberToCurrency";
 import { useFocusEffect } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Alert, View } from "react-native";
 
 export default function Index(){
@@ -12,22 +12,27 @@ export default function Index(){
     const [ targets, setTargets ] = useState<TartgetGridProps[]>([])
     const [ isFetching, setIsFetching ] = useState(true)
     const targetDatabase = useTargetDatabase()
-   
+    const [ targetFocusedColor, setTargetFocusedColor ] = useState('')
+
+ 
      async function fetchTargets(): Promise<TartgetGridProps[]> {
             try {
               const response = await targetDatabase.listByPercentage()
+              console.log(response[0])
               return response.map((item) => ({
                    id:Number(item.id),
                   target:numberToCurrency(item.amount),
                   currency: numberToCurrency(item.current),
                   color: item.color,
-                  amount: item.amount,
                   end_date: item.end_date,
                   name: item.name,
                   percentage: Number(item.percentage.toFixed(2)),
                   current:item.current,
-                  photo_url: item.photo_url,
                   start_date: item.start_date, 
+                  photo_file_name: item.photo_file_name,
+                  photo_color: item.photo_color,
+                  photo_blur_hash: item.photo_blur_hash,
+                  photo_direct_url: item.photo_direct_url,
               }))
             } catch (error) {
               Alert.alert('Erro', 'Não foi possível carregar as metas.')
@@ -59,15 +64,17 @@ export default function Index(){
         greetings:'Boa Tarde'
     }
  
-
-    return (
+     return (
         <View style={{ flex:1}}>
             <HomeHeader  
             data={data} 
+            targetFocusedColor={targetFocusedColor}
             />
             <Summary />
             <TargetGrid
               data={targets}
+             onFocusChange={(color) => setTargetFocusedColor(color)}
+              
               />
  
         </View>

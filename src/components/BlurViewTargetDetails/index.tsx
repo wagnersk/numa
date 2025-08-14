@@ -27,7 +27,7 @@ export default function BlurViewTargetDetails({
         console.log("Edit target with ID:", id);
         router.push(`/no-tabs/target/${id}`)
     }
-    console.log(data.percentage)
+
     
     return (
                <View style={styles.container}>
@@ -39,7 +39,7 @@ export default function BlurViewTargetDetails({
                         fill={data.percentage}
                         lineCap="round"
                         rotation={0}
-                        tintColor={colors.green[100]}
+                        tintColor={data.photo_color}
                         backgroundColor={colors.gray[100]}
                         delay={500}
                         >
@@ -92,10 +92,6 @@ export default function BlurViewTargetDetails({
                         </View>
 
                         <View style={styles.targetContent}>
-                            <TouchableOpacity  style={styles.buttonBorder} onPress={handleDeleteTarget}>
-                                    <AntDesign name="delete" size={24} color={colors.black}/>
-                            </TouchableOpacity>
-
                             <TouchableOpacity   style={styles.buttonBorder} onPress={handleEditTarget}>
                                 <Text style={styles.buttonText}>Editar</Text>
                             </TouchableOpacity>

@@ -34,23 +34,23 @@ export const styles = StyleSheet.create({
     },
     targetInfoWrapper : {
         flex:1,
-        gap:16,
+        justifyContent:'space-between'
     },
     targetHeader : {
         width:'50%',
         flexWrap:'nowrap',
     },
-    targetContent :{ 
+    targetContent : {  
         flexDirection: 'row',
         justifyContent: 'space-between',
+        width:'100%'
     },
-    targetInfoContent :{
+    targetInfoContent : {
         justifyContent:'flex-start',
-        width:'33%',
-        
+        width:'45%',
     },
     targetGoal : {
-        fontSize: 28,
+        fontSize: 32,
         color: colors.black,
         fontFamily: fontFamily.regular
     },
@@ -60,7 +60,7 @@ export const styles = StyleSheet.create({
         fontFamily: fontFamily.regular
     },
     targetValue : {
-        fontSize: 22,
+        fontSize: 24,
         color: colors.black,
         fontFamily: fontFamily.regular
     },
@@ -77,6 +77,7 @@ export const styles = StyleSheet.create({
         justifyContent:'center',
         paddingVertical:10,
         paddingHorizontal:60,
+        width:'100%',
     },
     circleBlurBackgroud :  { 
         width: '100%',

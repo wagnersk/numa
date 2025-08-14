@@ -5,22 +5,17 @@ import { BlurView } from 'expo-blur';
 import { styles } from "./styles";
 import { colors, fontFamily } from "@/theme";
 import StaticCircularProgressComponent from "../StaticCircularProgressComponent";
-
+import { TartgetGridProps } from "../TargetGrid";
+import { getLocalPhotoUri } from "@/utils/getLocalPhotoUri";
 
 type Props = {
     onPress: () => void;
-    photo_url: string;
-    targetName: string;
-    percentage: number;
-    id: string;
+    item: TartgetGridProps;
 }
 
 export default function BlurViewTargetMiniCard({ 
     onPress,
-    photo_url,
-    targetName,
-    percentage,
-    id
+    item,
 }: Props) {
     const params = useLocalSearchParams<{id: string}>();
     function handleDeleteTarget() {
@@ -36,7 +31,7 @@ export default function BlurViewTargetMiniCard({
             onPress={onPress}
         >
             <ImageBackground
-                source={{ uri: photo_url }}
+                source={{ uri: getLocalPhotoUri(item.photo_file_name) }}
                 style={styles.imageStyle}
                 resizeMode="cover"
             >
@@ -44,10 +39,10 @@ export default function BlurViewTargetMiniCard({
                 <StaticCircularProgressComponent
                     size={40}
                     width={4}
-                    fill={percentage}
+                    fill={item.percentage}
                     lineCap="round"
                     rotation={0}
-                    tintColor={colors.green[100]}
+                    tintColor={item.photo_color}
                     backgroundColor={colors.gray[100]}
                     textFontStyle={fontFamily.light}
                     fontSize={10}
@@ -60,7 +55,7 @@ export default function BlurViewTargetMiniCard({
                     style={styles.squareBlurCircle2}
                 >
                     <View style={styles.textWrapper}>
-                        <Text style={styles.targetGoal}>{targetName}</Text>
+                        <Text style={styles.targetGoal}>{item.name}</Text>
                     </View>
                 </BlurView>
             </ImageBackground>

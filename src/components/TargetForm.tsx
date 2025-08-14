@@ -1,5 +1,5 @@
 // components/TargetForm.tsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -22,32 +22,31 @@ import { Button } from "@/components/Button";
 import { formatDate } from "@/utils/formatDate";
 import { UnsplashService } from "@/services/UnsplashService";
 
-// app/target/index.tsx
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { useTargetStore } from "@/store/useImageStore";
 import { useTargetDatabase } from "@/database/useTargetDatabase";
 import { useTransactionsDatabase } from "@/database/useTransactionsDatabase";
 import { usePhotosDatabase } from "@/database/usePhotosDatabase";
-import { getRandomColor } from "@/app/utils/getRandomColor";
+import { getRandomColor } from "@/utils/getRandomColor";
 
-import { useLocalSearchParams } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context"; 
+import { addDays } from "@/utils/addDays";
+import { getLocalPhotoUri } from "@/utils/getLocalPhotoUri";
 
-
-
-
-interface TargetData {
-  targetName: string;
-  currency: string;
-  startValue: number;
-  goalValue: number;
-  startDate: Date | null;
-  endDate: Date | null;
+export type TartgetGridProps = {
+    id?:number;
+    name: string;
+    currency: string;
+    photo_file_name: string;
+    color: string;
+    current: number;
+    target: number;
+    start_date: number;
+    end_date: number;
 }
 
 interface TargetFormProps {
   editting:boolean
-  initialData?: Partial<TargetData>;
   onEditColor: () => void;
   onEditPhoto: () => void;
   paramsId?: string| undefined;
@@ -55,12 +54,11 @@ interface TargetFormProps {
 
 export function TargetForm({
   editting,
-  initialData,
   onEditColor,
   onEditPhoto,
   paramsId,
 }: TargetFormProps) {
-
+ 
     const router = useRouter();
     
     const color = useTargetStore((state) => state.target.color);
@@ -73,304 +71,525 @@ export function TargetForm({
     const photosDatabase = usePhotosDatabase();
   
     const [isLoading, setIsLoading] = useState(false);
+    const currenciesArray = ["BRL", "USD", "EUR"];
+
   
-    useEffect(() => {
-      if (!color) {
-        setTempTarget({ color: getRandomColor() });
-      }
-    }, []);
-  
-  
-  const [targetData, setTargetData] = useState<TargetData>({
-    targetName: "",
+  const [targetData, setTargetData] = useState<TartgetGridProps>({
+    name: "",
     currency: "BRL",
-    startValue: 0,
-    goalValue: 0,
-    startDate: null,
-    endDate: null,
-    ...initialData,
+    current: 0,
+    target: 0,
+    start_date: 0,
+    end_date: 0,
+    color: colors.white,
+    photo_file_name: null,
   });
+
+
+  const [ isFetching, setIsFetching ] = useState(true)
 
   const [isStartPickerVisible, setStartPickerVisible] = useState(false);
   const [isEndPickerVisible, setEndPickerVisible] = useState(false);
 
-  function handleSetName(targetName: string) {
-    setTargetData((prev) => ({ ...prev, targetName }));
+  function handleSetName(name: string) {
+    setTargetData((prev) => ({ ...prev, name }));
   }
 
   function handleSelectCurrency(currency: string) {
     setTargetData((prev) => ({ ...prev, currency }));
   }
 
-  function handleSelectStartValue(startValue: number) {
-    setTargetData((prev) => ({ ...prev, startValue }));
+  function handleSelectStartValue(current: number) {
+    setTargetData((prev) => ({ ...prev, current }));
+  }
+ 
+  function handleSetGoalValue(target: number) {
+    setTargetData((prev) => ({ ...prev, target }));
   }
 
-  function handleSetGoalValue(goalValue: number) {
-    setTargetData((prev) => ({ ...prev, goalValue }));
-  }
-
-  function handleSetStartDate(startDate: Date) {
-    setTargetData((prev) => ({ ...prev, startDate }));
+  function handleSetStartDate(start_date: Date) {
+    const formattedStartDate = start_date.getTime()
+    setTargetData((prev) => ({ ...prev, start_date:formattedStartDate }));
     setStartPickerVisible(false);
   }
 
-  function handleSetEndDate(endDate: Date) {
-    setTargetData((prev) => ({ ...prev, endDate }));
+  function handleSetEndDate(end_date: Date) {
+        const formattedStartDate = end_date.getTime()
+
+    setTargetData((prev) => ({ ...prev, end_date:formattedStartDate }));
     setEndPickerVisible(false);
   }
 
-    async function handleSave(data) {
-      if (!photo) {
-        Alert.alert("Atenção", "Adicione uma imagem para continuar.");
-        return;
-      }
+  async function create(data:TartgetGridProps) {
+ 
+    try {
       setIsLoading(true);
-      try {
-        const photoData = await UnsplashService.downloadPhoto(photo);
-  
-        const targetId = await targetDatabase.create({
-          name: data.targetName,
-          amount: data.goalValue,
-          currency: data.currency,
-          color: color,
-          start_date: data.startDate,
-          end_date: data.endDate,
-        });
-  
-        await transactionsDatabase.create({
-          amount: data.startValue,
-          target_id: targetId,
-          observation: "Saldo inicial",
-        });
-  
-        await photosDatabase.create({
-          target_id: targetId,
-          color: photoData.color,
-          blur_hash: photoData.blur_hash,
-          local_uri: photoData.localUri,
-          direct_url: photoData.directUrl,
-        });
-  
-        Alert.alert("Nova Meta", "Meta criada com sucesso!", [
-          {
-            text: "Ok",
-            onPress: () => {
-              resetTempTarget();
-              router.push("/tabs");
-            },
-          },
-        ]);
-      } catch (error) {
-        Alert.alert("Erro", "Não foi possível criar a meta.");
-      } finally {
-        setIsLoading(false);
-      }
-    }
 
-  async function handleSubmit() {
-    if (!targetData.targetName.trim() || targetData.goalValue <= 0) {
-      return Alert.alert("Atenção", "Preencha nome e valor da meta.");
+      const photoData = await UnsplashService.downloadPhoto(photo);
+ 
+      const targetId = await targetDatabase.create({
+        name: data.name,
+        amount: data.target,
+        currency: data.currency,
+        color: color,
+        start_date: data.start_date,
+        end_date: data.end_date,
+      });
+
+      await transactionsDatabase.create({
+        amount: data.current,
+        target_id: targetId,
+        observation: "Saldo inicial",
+      });
+ 
+      await photosDatabase.create({
+        target_id: targetId,
+        file_name: photoData.file_name,
+        color: photoData.color,
+        blur_hash: photoData.blur_hash,
+        direct_url: photoData.direct_url,
+      });
+
+   Alert.alert("Nova Meta", "Meta criada com sucesso!", [
+     {
+       text: "Ok",
+       onPress: () => {
+          resetTempTarget();
+          clearData()
+            router.push("/tabs");
+          },
+        },
+      ]);
+    } catch (error) {
+      Alert.alert("Erro", "Não foi possível criar a meta.");
+    } finally {
+      setIsLoading(false);
     }
-    await handleSave(targetData);
   }
 
-  const currenciesArray = ["BRL", "USD", "EUR"];
+ async function update(data: TartgetGridProps) {
+
+
+  setIsLoading(true);
+
+  try {
+    let photoData = null;
+
+    // Se houver nova foto selecionada
+    if (photo) {
+      photoData = await UnsplashService.downloadPhoto(photo);
+      await UnsplashService.deleteLocalPhoto(data.photo_file_name);
+    }
+
+    // Atualiza tabela targets
+    await targetDatabase.update({
+      id: data.id,
+      name: data.name,
+      amount: data.target,
+      currency: data.currency,
+      color: color,
+      end_date: data.end_date,
+    });
+
+    // Atualiza foto se houver nova foto
+    console.log(`fora`)
+    if (photoData) {
+      console.log(`dentro`,{
+        id: data.id, // assumindo que o id da foto é igual ao target_id
+        file_name: photoData.file_name,
+        color: photoData.color,
+        blur_hash: photoData.blur_hash,
+        direct_url: photoData.direct_url,
+      })
+      await photosDatabase.update({
+        id: data.id, // assumindo que o id da foto é igual ao target_id
+        file_name: photoData.file_name,
+        color: photoData.color,
+        blur_hash: photoData.blur_hash,
+        direct_url: photoData.direct_url,
+      });
+    }
+
+
+    Alert.alert("Meta Atualizada", "A meta foi atualizada com sucesso!", [
+      {
+        text: "Ok",
+        onPress: () => {
+          resetTempTarget();
+          clearData();
+          router.push("/tabs");
+        },
+      },
+    ]);
+  } catch (error) {
+    console.log(error);
+    Alert.alert("Erro", "Não foi possível atualizar a meta.");
+  } finally {
+    setIsLoading(false);
+  }
+}
+  
+  async function handleSubmit() {
+     if (!targetData.name.trim() || Number(targetData.target) <= 0) {
+      return Alert.alert("Atenção", "Preencha nome e valor da meta.");
+    }
+
+    if (!editting && !photo) {
+      Alert.alert("Atenção", "Adicione uma imagem para continuar.");
+      return;
+    }
+    if (editting && targetData.photo_file_name === null) {
+      Alert.alert("Atenção", "Adicione uma imagem para continuar.");
+      return;
+    }
+      // 3️⃣ Validar datas
+    if (!targetData.start_date || !targetData.end_date) {
+      return Alert.alert("Atenção", "Selecione datas válidas para a meta.");
+    }
+    if (targetData.end_date <= targetData.start_date) {
+      return Alert.alert("Atenção", "A data de término deve ser maior que a data de início.");
+    }
+
+      if (targetData.current > targetData.target && targetData.current > 0 && targetData.target > 0) {
+      return Alert.alert("Atenção", "Valores inválidos para saldo ou objetivo.");
+    }
+
+
+    if(editting ){ 
+      await update(targetData)
+    
+    } else {
+      await create(targetData); 
+
+    }
+  }
+
+ async function handleDelete() {
+
+  Alert.alert(
+    "Atenção",
+    "Deseja realmente deletar essa meta?",
+    [
+      {
+        text: "Cancelar",
+        style: "cancel",
+      },
+      {
+        text: "Deletar",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            setIsLoading(true);
+
+            // 1️⃣ Deletar a foto local
+            await UnsplashService.deleteLocalPhoto(targetData.photo_file_name);
+
+            // 2️⃣ Deletar registro da foto no SQLite
+            await photosDatabase.remove(Number(targetData.id));
+
+            // 3️⃣ Deletar transações relacionadas
+            await transactionsDatabase.remove(Number(targetData.id));
+
+            // 4️⃣ Deletar a meta
+            await targetDatabase.remove(Number(targetData.id));
+
+            Alert.alert("Meta deletada com sucesso!");
+
+            // Resetar estado e voltar para a lista
+            resetTempTarget();
+            clearData();
+            router.push("/tabs");
+          } catch (error) {
+            console.log(error);
+            Alert.alert("Erro", "Não foi possível deletar a meta.");
+          } finally {
+            setIsLoading(false);
+          }
+        },
+      },
+    ]
+  );
+}
+ 
+  async function fetchTarget(): Promise<TartgetGridProps> {
+      try {
+
+        const response = await targetDatabase.show(paramsId)
+        return {
+            id:Number(response.id),
+            name: response.name,
+            currency: response.currency,
+            current:response.current,
+            target:response.amount,
+            start_date: response.start_date, 
+            end_date: response.end_date,
+            color: response.color,
+            photo_file_name: response.photo_file_name,
+        }
+    
+      } catch (error) {
+        Alert.alert('Erro', 'Não foi possível carregar as metas.')
+        console.log(error)
+      }
+  }
+
+
+    async function fetchData() {
+      const targetDataPromise = fetchTarget()
+      
+      const [target] = await Promise.all([
+        targetDataPromise,
+      ])
+      
+      
+      setTargetData(target) 
+      setIsFetching(false)
+    }
+
+
+    async function clearData() {
+          setTargetData({
+            name: "",
+            currency: "BRL",
+            current: 0,
+            target: 0,
+            start_date: 0,
+            end_date: 0,
+            color: colors.white,
+            photo_file_name: '',
+          }) 
+          setIsFetching(false)
+    }
+    
+
+    useFocusEffect(
+      useCallback(() => {
+        if(editting){
+          fetchData()
+        } 
+      }, []),
+    )
+
+    useEffect(() => {
+      if (!color) {
+        setTempTarget({ color: getRandomColor() });
+      }
+
+    },[])
+ 
 
   return (
      <SafeAreaView style={{ flex: 1, backgroundColor: colors.gray[100] }}>
-
-    
-    <KeyboardAvoidingView
-      style={styles.keyboardAvoiding}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
-      {/* Header */}
-
-          <View style={[styles.header, { justifyContent: editting ? "space-between":"center"   }]}>
-            {editting && 
-              <TouchableOpacity onPress={() => router.back()}>
-                <Feather name="arrow-left" size={24} color={colors.black} />
-              </TouchableOpacity>
-            }
-            <Text style={styles.title}>{initialData ? "Editar Meta" : "Nova Meta"}</Text>
-            {editting &&
-            <View style={{ width: 24 }} /> 
-            }
-          </View>
-
-      {/* Nome da meta */}
-      <View style={styles.row}>
-        <View style={styles.inputSearchWrapper}>
-          <TextInput
-            style={styles.input}
-            placeholder="Nome da meta"
-            placeholderTextColor={colors.gray[400]}
-            value={targetData.targetName}
-            onChangeText={handleSetName}
-            maxLength={22}
-            autoFocus={!initialData}
-            editable={!isLoading}
-          />
-          <View style={styles.inputSearchMaxCounterWrapper}>
-            <Text style={styles.charCount}>{targetData.targetName.length}/22</Text>
-          </View>
-        </View>
-
-        <View style={styles.editButtonWrapper}>
-          <TouchableOpacity
-            onPress={onEditColor}
-            style={[styles.editButton, { backgroundColor: color }]}
-            disabled={isLoading}
-          >
-            <Feather name="edit-3" size={20} color={colors.black} />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* Banner */}
-      <TouchableOpacity
-        onPress={onEditPhoto}
-        style={[styles.bannerUpload, photo && { borderWidth: 0 }]}
-        disabled={isLoading}
+      <KeyboardAvoidingView
+        style={styles.keyboardAvoiding}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        <View style={styles.bannerTextWrapper}>
-          {photo ? (
-            <Image source={{ uri: photo.urls.regular }} style={styles.imagePreview} resizeMode="cover" />
-          ) : (
-            <>
-              <Feather name="image" size={24} color={colors.gray[500]} />
-              <Text style={styles.bannerText}>Adicionar Imagem ao Banner</Text>
-            </>
-          )}
-        </View>
-      </TouchableOpacity>
+        {/* Header */}
 
-      {/* Seleção de moeda */}
-      <View style={styles.currencyRow}>
-        {currenciesArray.map((curr) => (
-          <TouchableOpacity
-            key={curr}
-            style={[
-              styles.currencyButton,
-              targetData.currency === curr && styles.currencyButtonSelected,
-            ]}
-            onPress={() => handleSelectCurrency(curr)}
-            disabled={isLoading}
-          >
-            <Text
-              style={[
-                styles.currencyText,
-                targetData.currency === curr && styles.currencyTextSelected,
-              ]}
-            >
-              {curr}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {/* Valores e datas */}
-      <View>
-        {/* Valores */}
-        <View style={styles.valuesRow}>
-          <View style={{ flex: 1 }}>
-            <CurrencyInput
-              prefix={
-                targetData.currency === "BRL"
-                  ? "R$"
-                  : targetData.currency === "USD"
-                  ? "$"
-                  : "€"
-              }
-              label="Saldo Inicial"
-              value={targetData.startValue}
-              onChangeValue={handleSelectStartValue}
-              editable={!isLoading}
-            />
-          </View>
-          <View style={{ flex: 1 }}>
-            <CurrencyInput
-              prefix={
-                targetData.currency === "BRL"
-                  ? "R$"
-                  : targetData.currency === "USD"
-                  ? "$"
-                  : "€"
-              }
-              label="Objetivo"
-              value={targetData.goalValue}
-              onChangeValue={handleSetGoalValue}
-              editable={!isLoading}
-            />
-          </View>
+        <View style={[styles.header, { justifyContent: editting ? "space-between":"center"   }]}>
+          {editting && 
+            <TouchableOpacity onPress={() => router.back()}>
+              <Feather name="arrow-left" size={24} color={colors.black} />
+            </TouchableOpacity>
+          }
+          <Text style={styles.title}>{editting ? "Editar Meta" : "Nova Meta"}</Text>
+          {editting &&
+          <View style={{ width: 24 }} /> 
+          }
         </View>
 
-        {/* Datas */}
-        <View style={styles.dateRow}>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.label}>Início</Text>
+        {/* Nome da meta */}
+        <View style={styles.row}>
+          <View style={styles.inputSearchWrapper}>
+            <TextInput
+              style={styles.input}
+              placeholder="Nome da meta"
+              placeholderTextColor={colors.gray[400]}
+              value={targetData.name}
+              onChangeText={handleSetName}
+              maxLength={22}
+              editable={!isLoading}
+            />
+            <View style={styles.inputSearchMaxCounterWrapper}>
+              <Text style={styles.charCount}>{targetData.name.length}/22</Text>
+            </View>
+          </View>
+
+          <View style={styles.editButtonWrapper}>
             <TouchableOpacity
-              style={styles.dateButton}
-              onPress={() => setStartPickerVisible(true)}
+              onPress={onEditColor}
+              style={[styles.editButton, { backgroundColor: editting ?targetData.color :  color  }]}
               disabled={isLoading}
             >
-              <Text
-                style={[
-                  styles.dateText,
-                  targetData.startDate ? styles.dateTextActive : styles.dateTextInactive,
-                ]}
-              >
-                {targetData.startDate ? formatDate(targetData.startDate) : "Selecionar data"}
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={{ flex: 1 }}>
-            <Text style={styles.label}>Fim</Text>
-            <TouchableOpacity
-              style={styles.dateButton}
-              onPress={() => setEndPickerVisible(true)}
-              disabled={isLoading || !targetData.startDate}
-            >
-              <Text
-                style={[
-                  styles.dateText,
-                  targetData.endDate ? styles.dateTextActive : styles.dateTextInactive,
-                ]}
-              >
-                {targetData.endDate ? formatDate(targetData.endDate) : "Selecionar data"}
-              </Text>
+              <Feather name="edit-3" size={20} color={colors.black} />
             </TouchableOpacity>
           </View>
         </View>
-
-        <DateTimePickerModal
-          isVisible={isStartPickerVisible}
-          mode="date"
-          locale="pt-BR"
-          date={targetData.startDate || new Date()}
-          onConfirm={handleSetStartDate}
-          onCancel={() => setStartPickerVisible(false)}
-          minimumDate={new Date()}
+        {/* Banner */}
+        <TouchableOpacity
+          onPress={onEditPhoto}
+          style={[styles.bannerUpload, 
+            photo && { borderWidth: 0 },
+            editting && { flex:1, borderWidth:0 }
+          ]}
           disabled={isLoading}
-        />
+        >
+          <View style={styles.bannerTextWrapper}>
+            {photo || targetData.photo_file_name ? (
+              <Image source={{ uri: photo ? photo.urls.regular : getLocalPhotoUri(targetData.photo_file_name) }} style={styles.imagePreview} resizeMode="cover" />
+            ) : (
+              <>
+                <Feather name="image" size={24} color={colors.gray[500]} />
+                <Text style={styles.bannerText}>Adicionar Imagem ao Banner</Text>
+              </>
+            )}
+          </View>
+        </TouchableOpacity>
 
-        <DateTimePickerModal
-          isVisible={isEndPickerVisible}
-          mode="date"
-          locale="pt-BR"
-          date={targetData.endDate || new Date()}
-          onConfirm={handleSetEndDate}
-          onCancel={() => setEndPickerVisible(false)}
-          minimumDate={targetData.startDate || undefined}
-          disabled={isLoading || !targetData.startDate}
-        />
-      </View>
+        {/* Seleção de moeda */}
 
-      {/* Botão */}
-      <Button title={initialData ? "Atualizar" : "Cadastrar"} onPress={handleSubmit} isProcessing={isLoading} />
-    </KeyboardAvoidingView>
+             {!editting &&
+              <View style={styles.currencyRow}>
+                {currenciesArray.map((curr) => (
+                  <TouchableOpacity
+                    key={curr}
+                    style={[
+                      styles.currencyButton,
+                      targetData.currency === curr && styles.currencyButtonSelected,
+                    ]}
+                    onPress={() => handleSelectCurrency(curr)}
+                    disabled={isLoading}
+                  >
+                    <Text
+                      style={[
+                        styles.currencyText,
+                        targetData.currency === curr && styles.currencyTextSelected,
+                      ]}
+                    >
+                      {curr}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+              }
+        {/* Valores e datas */}
+        <View>
+          {/* Valores */}
+          <View style={styles.valuesRow}>
+            {!editting &&
+            <View style={{ flex: 1 }}>
+              <CurrencyInput
+                prefix={
+                  targetData.currency === "BRL"
+                  ? "R$"
+                  : targetData.currency === "USD"
+                  ? "$"
+                  : "€"
+                }
+                label="Saldo Inicial"
+                value={targetData.current}
+                onChangeValue={handleSelectStartValue}
+                editable={!isLoading}
+                />
+            </View> }
+            <View style={{ flex: 1 }}>
+              <CurrencyInput
+                prefix={
+                  targetData.currency === "BRL"
+                    ? "R$"
+                    : targetData.currency === "USD"
+                    ? "$"
+                    : "€"
+                }
+                label="Objetivo"
+                value={targetData.target}
+                onChangeValue={handleSetGoalValue}
+                editable={!isLoading}
+              />
+            </View>
+          </View>
+
+          {/* Datas */}
+          <View style={styles.dateRow}>
+                 {!editting && 
+                
+            <View style={{ flex: 1 }}>
+              <Text style={styles.label}>Início</Text>
+              <TouchableOpacity
+                style={styles.dateButton}
+                onPress={() => setStartPickerVisible(true)}
+                disabled={isLoading}
+              >
+                <Text
+                  style={[
+                    styles.dateText,
+                    targetData.start_date ? styles.dateTextActive : styles.dateTextInactive,
+                  ]}
+                >
+                  {targetData.start_date ? formatDate(new Date(targetData.start_date)) : "Selecionar data"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+ }
+
+            <View style={{ flex: 1 }}>
+              <Text style={styles.label}>Fim</Text>
+              <TouchableOpacity
+                style={styles.dateButton}
+                onPress={() => setEndPickerVisible(true)}
+                disabled={isLoading || !targetData.start_date}
+              >
+                <Text
+                  style={[
+                    styles.dateText,
+                    targetData.end_date ? styles.dateTextActive : styles.dateTextInactive,
+                  ]}
+                >
+                  {targetData.end_date ? formatDate(new Date(targetData.end_date)) : "Selecionar data"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <DateTimePickerModal
+            isVisible={isStartPickerVisible}
+            mode="date"
+            locale="pt-BR"
+            date={new Date()}
+            onConfirm={handleSetStartDate}
+            onCancel={() => setStartPickerVisible(false)}
+            minimumDate={new Date()}
+            disabled={isLoading}
+          />
+
+          <DateTimePickerModal
+            isVisible={isEndPickerVisible}
+            mode="date"
+            locale="pt-BR"
+            date={ addDays(new Date(targetData.start_date), 1)}
+            onConfirm={handleSetEndDate}
+            onCancel={() => setEndPickerVisible(false)}
+           /*  minimumDate={new Date(targetData.start_date) || undefined} */
+            minimumDate={
+              targetData.start_date
+                ? addDays(new Date(targetData.start_date), 1)
+                : undefined
+            }
+
+
+
+            disabled={isLoading || !targetData.start_date}
+          />
+        </View>
+
+        {/* Botão */}
+        <Button title={editting ? "Atualizar" : "Cadastrar"} onPress={handleSubmit} isProcessing={isLoading} />
+
+        {editting &&
+        <Button title={'Deletar'} onPress={handleDelete} isProcessing={isLoading} type={'delete'}/>
+        }
+        
+      </KeyboardAvoidingView>
      </SafeAreaView>
 
   );
@@ -398,12 +617,14 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     gap: 20,
     width: "100%",
+    
   },
   inputSearchWrapper: {
     flexDirection: "column",
     justifyContent: "flex-end",
     flex: 1,
     position: "relative",
+    
   },
   inputSearchMaxCounterWrapper: {
     position: "absolute",
@@ -492,13 +713,13 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   label: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: colors.gray[700],
-    marginBottom: 6,
+     color: colors.gray[600],
+    fontSize: 16,
+    fontFamily: fontFamily.regular,
+    marginBottom: 10,
   },
   input: {
-    borderRadius: 20,
+    borderRadius: 40,
     paddingVertical: 10,
     paddingHorizontal: 16,
     fontSize: 14,

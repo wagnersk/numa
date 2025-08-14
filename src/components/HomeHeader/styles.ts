@@ -8,6 +8,7 @@ export const styles = StyleSheet.create({
         height:156,
         backgroundColor: colors.gray[300],
         justifyContent:'flex-end',
+        opacity:0.5,
   
     },
      infoWrapper : {

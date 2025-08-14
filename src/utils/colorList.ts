@@ -1,4 +1,4 @@
-  export const colorsList = [
+   export const colorsList = [
     "#EE7752",
     "#7B2FF7",
     "#E6EB2F",

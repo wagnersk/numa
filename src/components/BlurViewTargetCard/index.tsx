@@ -4,25 +4,21 @@ import { BlurView } from 'expo-blur';
 
 import { styles } from "./styles";
 import Entypo from '@expo/vector-icons/Entypo';
+import { TartgetGridProps } from "../TargetGrid";
+import { getLocalPhotoUri } from "@/utils/getLocalPhotoUri";
 
 type Props = {
     onPress: () => void;
-    photo_url: string;
-    name: string;
-    percentage: number;
     width: number;
-    id: string;
     focus?: boolean;
+    item:TartgetGridProps
 }
 
 export default function BlurViewTargetCard({ 
     onPress,
-    photo_url,
-    name,
-    percentage,
     width,
     focus,
-    id
+    item
 }: Props) {
     const params = useLocalSearchParams<{id: string}>();
     function handleDeleteTarget() {
@@ -31,13 +27,11 @@ export default function BlurViewTargetCard({
     function handleEditTarget() {
         console.log("Edit target with ID:", params.id);
     }
-    console.log(`photo_url`,photo_url)
-
-
+ 
     return (
         <TouchableOpacity onPress={onPress}>
             <ImageBackground
-                source={{ uri: photo_url }}
+                source={{ uri: getLocalPhotoUri(item.photo_file_name) }}
                 style={[
                     styles.container,
                     {
@@ -58,14 +52,20 @@ export default function BlurViewTargetCard({
                     <View style={styles.textInfoWrapper}>
                         <View style={styles.textInfoLeftWrapper}>
                             <View style={styles.textWrapper}>
-                                <Text style={styles.targetTittle}>{name}</Text>
+                                <Text style={styles.targetTittle}>{item.name}</Text>
                             </View>
                             <View style={styles.progressBackground}>
-                                <View style={[styles.progressColor,{width: percentage as DimensionValue}]}/>
+                                
+                                <View style={{  overflow: 'hidden',
+                                                borderRadius: 4,
+                                                height: '100%',
+                                                backgroundColor: item.photo_color,
+                                                width: `${item.percentage}%`}}
+                                                />
                             </View>
 
                             <View style={styles.textWrapper}>
-                                <Text style={styles.targetGoal}>{percentage} %</Text>
+                                <Text style={styles.targetGoal}>{item.percentage} %</Text>
                             </View>
                         </View>
                         <View style={styles.textInfoRightWrapper}>

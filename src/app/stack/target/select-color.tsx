@@ -6,7 +6,7 @@ import { Feather } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { colors } from "@/theme";
 import { useTargetStore } from "@/store/useImageStore";
-import { colorsList } from "@/app/utils/colorList";
+import { colorsList } from "@/utils/colorList";
 
 export default function SelectColorScreen() {
   const router = useRouter();

@@ -13,7 +13,7 @@ export default function GalleryScreen() {
   const [photos, setPhotos] = useState<UnsplashPhoto[]>([]);
   const [loading, setLoading] = useState(false);
   const [keyword, setKeyword] = useState('');
-  const setSelectedPhoto = useTargetStore(state => state.setTempTarget);
+  const photo = useTargetStore(state => state.target.photo);
   const router = useRouter();
 
   async function loadRandomPhotos() {
@@ -42,14 +42,15 @@ export default function GalleryScreen() {
     }
   }
 
-  function handleConfirm(photo: UnsplashPhoto) {
-    setSelectedPhoto({ photo }); // salva no Zustand
-    router.push(`/stack/target/confirm-image/`); // passa o id para a tela de confirmação
+  function handleConfirm(id:String) {
+    router.push(`/stack/target/confirm-image/${id}`); // passa o id para a tela de confirmação
   }
 
   useEffect(() => {
     loadRandomPhotos();
   }, []);
+
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -83,8 +84,17 @@ export default function GalleryScreen() {
           columnWrapperStyle={styles.flatlistStyle}
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) => (
-            <TouchableOpacity onPress={() => handleConfirm(item)}>
-              <Image source={{ uri: item.urls.small }} style={styles.image} />
+            <TouchableOpacity onPress={() => handleConfirm(item.id)}>
+              <Image source={{ uri: item.urls.small }} style={[styles.image,photo && photo.id ===item.id &&{
+                 borderWidth: 4 ,
+                 borderColor: colors.green[500],
+                 /* faz um shadow e ofset */
+                 shadowColor: colors.black,
+                 shadowOffset: { width: 0, height: 2 },
+                 shadowOpacity: 0.25,
+                 shadowRadius: 3.84,
+                
+                  }]} />
             </TouchableOpacity>
           )}
         />

@@ -5,6 +5,7 @@ import { ToogleButton } from "./toogleButton"
 import { GridType1 } from "./GridType1"
 import { GridType2 } from "./GridType2"
 import { useState ,useEffect, use} from "react"
+import { SafeAreaView } from "react-native-safe-area-context"
 
 export type TartgetGridProps = {
     id:number;
@@ -17,43 +18,57 @@ export type TartgetGridProps = {
     start_date:number;
     end_date:number;
 
-    photo_url:string;
+    photo_file_name:string;
+    photo_color:string;
+    photo_blur_hash:string;
+    photo_direct_url:string;
+
 
     current:number;
     percentage:number;
 }
-
+ 
  
 type Props = {
     data:TartgetGridProps[]
+   onFocusChange?: (id: string | null) => void; // callback opcional
+
 }
 
-export function TargetGrid({data}:Props){
+export function TargetGrid({
+    data,
+    onFocusChange
+}:Props){
     const [gridMode, setGridMode] = useState(true)
+
 
     function handleChangeGridMode() {
         setGridMode((prevMode) => !prevMode)
         
     }
-
+  
     return ( 
-        <View style={{ 
-            flex:1 ,
-            gap:48, 
-            justifyContent:'flex-start',
+            <View style={{ 
+                flex:1 ,
+                gap:48, 
+                justifyContent:'flex-start'
+                
+                
+            }}>
+                <ToogleButton 
+                onPress={handleChangeGridMode}
+                gridMode={gridMode}
+                />
+                { 
+                gridMode ? 
+                <GridType1 data={data}
+                 onFocusChange={(id) => onFocusChange(id)}
 
-        }}>
-            <ToogleButton 
-            onPress={handleChangeGridMode}
-            gridMode={gridMode}
-            />
-            { 
-            gridMode ? 
-            <GridType1 data={data} />
-            :
-            <GridType2 data={data} />
+                 />
+                :
+                <GridType2 data={data} />
             }
 
-            </View>
+                </View>
     )
 }

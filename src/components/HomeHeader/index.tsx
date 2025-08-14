@@ -8,17 +8,20 @@ import { router } from "expo-router";
 export type HomeHeaderProps = {
     label: string
     greetings: string
+
 }
 
 type Props = {
     data:HomeHeaderProps
+    targetFocusedColor:string
 }
 
 /* import Feather from '@expo/vector-icons/Feather'; */
-export function HomeHeader({data}:Props){
+export function HomeHeader({data,targetFocusedColor}:Props){
+    console.log(targetFocusedColor)
     return( 
         <View  
-            style={styles.container}
+            style={[styles.container,{ backgroundColor:targetFocusedColor }]}
             >
                 <View
                     style={styles.infoWrapper}

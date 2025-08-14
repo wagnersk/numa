@@ -34,9 +34,9 @@ export async function migrate(database:SQLiteDatabase){
         CREATE TABLE IF NOT EXISTS photos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             target_id INTEGER NOT NULL,
+            file_name TEXT NOT NULL,
             color TEXT NOT NULL,
             blur_hash TEXT NOT NULL,
-            local_uri TEXT NOT NULL,
             direct_url TEXT NOT NULL,
             created_at timestamp NOT NULL DEFAULT current_timestamp,
             updated_at timestamp NOT NULL DEFAULT current_timestamp,

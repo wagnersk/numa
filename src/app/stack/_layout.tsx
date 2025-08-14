@@ -14,15 +14,13 @@
                     >
                         <Stack.Screen name='settings'  />
 
-                        <Stack.Screen name="analysis/index" />
                         <Stack.Screen name="analysis/transactions/[id]" />
 
-                        <Stack.Screen name="index/[id]" />
-                        <Stack.Screen name="index/target-details" />
+                        <Stack.Screen name="index/target-details/[id]" />
                         
                         <Stack.Screen name="target/select-image" />
                         <Stack.Screen name="target/select-color" />
-                        <Stack.Screen name="target/confirm-image" />
+                        <Stack.Screen name="target/confirm-image/[id]" />
      
                     </Stack>
         

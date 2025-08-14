@@ -13,6 +13,6 @@ export const styles = StyleSheet.create({
     title:{
        color: colors.black,
         fontSize: 16,
-        fontFamily: fontFamily.regular,
+        fontFamily: fontFamily.bold,
     }
 })

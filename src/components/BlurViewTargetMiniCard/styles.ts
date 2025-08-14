@@ -31,7 +31,7 @@ export const styles = StyleSheet.create({
         textWrapper: { 
         width: '75%',
         flexWrap: 'nowrap' ,
-        alignItems: 'center',
+        alignItems: 'flex-start',
         justifyContent: 'center',
         paddingHorizontal: 12,
         paddingVertical: 6,

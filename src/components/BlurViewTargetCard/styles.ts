@@ -76,7 +76,7 @@ export const styles = StyleSheet.create({
         overflow: 'hidden',
         borderRadius: 4,
         height: '100%',
-        backgroundColor: colors.green[100],
+        
     },textInfoWrapper : {
         flex:1,
         gap:16,
