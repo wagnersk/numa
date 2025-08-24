@@ -78,7 +78,8 @@ export function GridType1({data,onFocusChange}:Props){
                   key={item.id}
                   width={ITEM_WIDTH}
                   focus={String(focusedId) === String(item.id)}
-                  onPress={()=>{ router.push(`/stack/target-details/${item.id}`)}}
+                  onDetails={()=>{ router.push(`/stack/target-details/${item.id}`)}}
+                  onInsertAmount={()=>{   router.push(`/stack/target-insert-amount/${item.id}`)} }
                   />
                 )}
                 snapToInterval={snapInterval} // trava a rolagem

@@ -1,28 +1,51 @@
-// /stack/target/select-color.tsx
-import React, { useState } from "react";
-import { View, Text, TouchableOpacity, FlatList, StyleSheet } from "react-native";
-import { useRouter } from "expo-router";
+import React, { useCallback, useState } from "react";
+import { View, Text, TouchableOpacity, FlatList, StyleSheet, Alert } from "react-native";
+import { useFocusEffect, useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { colors } from "@/theme";
 import { useTargetStore } from "@/store/useImageStore";
 import { colorsList } from "@/utils/colorList";
+import { TargetResponse, useTargetDatabase } from "@/database/useTargetDatabase";
 
 export default function SelectColorScreen() {
   const router = useRouter();
-   const setSelectedPhoto = useTargetStore((state) => state.setTempTarget);
-  
+  const setSelectedPhoto = useTargetStore((state) => state.setTempTarget);
+  const targetDatabase = useTargetDatabase();
 
-
-  const [color, setColor] = useState<string | null>(null)
+  const [color, setColor] = useState<string | null>(null);
+  const [filteredColorList, setFilteredColorList] = useState<string[]>([]);
 
   const handleOk = () => {
     if (color) {
-      setSelectedPhoto({color})
-      // Aqui você pode salvar no estado global, context ou router params
+      setSelectedPhoto({ color });
       router.back();
     }
   };
+
+  async function fetchTargets(): Promise<TargetResponse[]> {
+    try {
+      return await targetDatabase.showAll();
+    } catch (error) {
+      Alert.alert("Erro", "Não foi possível carregar as metas.");
+      console.log(error);
+      return [];
+    }
+  }
+
+  async function fetchData() {
+    const targetData = await fetchTargets();
+    const usedColors = targetData.map((item) => item.color)
+
+    const availableColors = colorsList.filter((c) => !usedColors.includes(c));
+    setFilteredColorList(availableColors);
+  }
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchData();
+    }, [])
+  );
 
   return (
     <SafeAreaView style={styles.container}>
@@ -32,12 +55,12 @@ export default function SelectColorScreen() {
           <Feather name="arrow-left" size={24} color={colors.black} />
         </TouchableOpacity>
         <Text style={styles.title}>Selecione uma cor</Text>
-        <View style={{ width: 24 }} /> 
+        <View style={{ width: 24 }} />
       </View>
 
-      {/* Lista de cores */}
+      {/* Lista de cores filtrada */}
       <FlatList
-        data={colorsList}
+        data={filteredColorList}
         keyExtractor={(item) => item}
         numColumns={2}
         columnWrapperStyle={styles.row}

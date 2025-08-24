@@ -51,7 +51,7 @@ export function TargetGrid({
             <View style={{ 
                 flex:1 ,
                 gap:48, 
-                justifyContent:'flex-start'
+                justifyContent:'flex-start',
                 
                 
             }}>

@@ -18,7 +18,7 @@ export default function Index(){
      async function fetchTargets(): Promise<TartgetGridProps[]> {
             try {
               const response = await targetDatabase.listByPercentage()
-              console.log(response[0])
+                        
               return response.map((item) => ({
                    id:Number(item.id),
                   target:numberToCurrency(item.amount),
@@ -41,22 +41,23 @@ export default function Index(){
           }
  
       
-        async function fetchData() {
-          const targetDataPromise = fetchTargets()
-      
-          const [targetData] = await Promise.all([
-            targetDataPromise,
-          ])
-      
-          setTargets(targetData)
-      
-          setIsFetching(false)
-        }
-      
-        useFocusEffect(
-          useCallback(() => {
-            fetchData()
-          }, []),
+      async function fetchData() {
+        const targetDataPromise = fetchTargets()
+    
+        const [targetData] = await Promise.all([
+          targetDataPromise,
+        ])
+
+    
+        setTargets(targetData)
+    
+        setIsFetching(false)
+      }
+    
+      useFocusEffect(
+        useCallback(() => {
+          fetchData()
+        }, []),
       )
 
     const data ={
@@ -70,7 +71,9 @@ export default function Index(){
             data={data} 
             targetFocusedColor={targetFocusedColor}
             />
-            <Summary />
+            <Summary
+ 
+            />
             <TargetGrid
               data={targets}
              onFocusChange={(color) => setTargetFocusedColor(color)}

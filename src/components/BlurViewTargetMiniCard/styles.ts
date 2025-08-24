@@ -12,21 +12,43 @@ export const styles = StyleSheet.create({
         height:160,
         width:160,
     },
-       squareBlurCircle1: { 
+       openEditTarget: { 
         position: 'absolute',
         zIndex: 1,
         right:8,
-        bottom: 36,
+        top: 8 ,
+        height:36,
+        width:36,
+        borderRadius:18,
+        overflow:'hidden',
+        justifyContent:'center',
+        alignItems:'center'
+    },
+       squareBlurCircle1: { 
+        alignItems:'flex-end',
+          position: 'absolute',
+        left: 0,
+        right: 4,
+        bottom: 0,
+        top:-18,
         
     },
-    squareBlurCircle2: { 
+    circleWrapper: { 
         position: 'absolute',
         left: 0,
         right: 0,
         bottom: 0,
         pointerEvents: 'box-none', // Permite que os toques passem para os elementos abaixo
         height: 56,
+    },
+    blueView: { 
+        position: 'absolute',
+        pointerEvents: 'box-none', // Permite que os toques passem para os elementos abaixo
         overflow: 'hidden',
+        flex:1,
+        width:'100%',
+        height:'100%',
+
     },
         textWrapper: { 
         width: '75%',

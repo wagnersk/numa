@@ -13,11 +13,13 @@ import { router } from "expo-router";
 export type Props = {
     id: string
     data:TartgetGridProps
+    contrastColor:'black' | 'white'
 }
  
 export default function BlurViewTargetDetails({
         id, 
-        data
+        data,
+        contrastColor
      }:Props
     ) {
     function handleDeleteTarget() {
@@ -40,7 +42,8 @@ export default function BlurViewTargetDetails({
                         lineCap="round"
                         rotation={0}
                         tintColor={data.photo_color}
-                        backgroundColor={colors.gray[100]}
+                        backgroundColor={contrastColor === 'white' ? colors.gray[100]: colors.gray[700]}
+                          /*  backgroundColor={contrastColor === 'black' ? colors.red[400]: colors.green[400]}  */
                         delay={500}
                         >
                       {

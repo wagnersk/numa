@@ -6,30 +6,37 @@ import { styles } from "./styles";
 import Entypo from '@expo/vector-icons/Entypo';
 import { TartgetGridProps } from "../TargetGrid";
 import { getLocalPhotoUri } from "@/utils/getLocalPhotoUri";
+import AntDesign from '@expo/vector-icons/AntDesign';
 
 type Props = {
-    onPress: () => void;
+    onDetails: () => void;
+    onInsertAmount: () => void;
     width: number;
     focus?: boolean;
     item:TartgetGridProps
 }
 
 export default function BlurViewTargetCard({ 
-    onPress,
+    onDetails,
+    onInsertAmount,
     width,
     focus,
     item
 }: Props) {
     const params = useLocalSearchParams<{id: string}>();
-    function handleDeleteTarget() {
-        console.log("Delete target with ID:", params.id);
-    }
-    function handleEditTarget() {
+
+     function handleEditTarget() {
         console.log("Edit target with ID:", params.id);
     }
+
+    function handleInsertAmountTarget() {
+        console.log("Delete target with ID:", params.id);
+    }
+ 
  
     return (
-        <TouchableOpacity onPress={onPress}>
+        <View>
+
             <ImageBackground
                 source={{ uri: getLocalPhotoUri(item.photo_file_name) }}
                 style={[
@@ -41,15 +48,25 @@ export default function BlurViewTargetCard({
                     }]}
                 resizeMode="cover"
             >
-                <View style={styles.squareBlurCircle1}>
-                </View>
+                <BlurView
+                    tint="light"
+                    intensity={800}
+                    style={styles.squareBlurCircle1}>
+                       <TouchableOpacity  activeOpacity={0.7} onPress={onDetails}>
+                            <AntDesign name="arrowsalt" size={24} color="black" />
+                    </TouchableOpacity>
+                </BlurView>
 
                 <BlurView
                     tint="light"
                     intensity={100}
                     style={styles.squareBlurCircle2}
                 >
-                    <View style={styles.textInfoWrapper}>
+                    <TouchableOpacity
+                     style={styles.textInfoWrapper}
+                     onPress={onInsertAmount}
+                      activeOpacity={0.7}
+                     >
                         <View style={styles.textInfoLeftWrapper}>
                             <View style={styles.textWrapper}>
                                 <Text style={styles.targetTittle}>{item.name}</Text>
@@ -72,9 +89,9 @@ export default function BlurViewTargetCard({
                             <Text style={styles.targetGoal}>Aplicar</Text>
                             <Entypo name="chevron-right" size={14} color="black" />
                         </View>
-                    </View>
+                    </TouchableOpacity>
                 </BlurView>
             </ImageBackground>
-        </TouchableOpacity>
+        </View>
     );
 }

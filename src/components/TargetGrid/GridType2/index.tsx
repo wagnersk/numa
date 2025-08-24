@@ -5,6 +5,7 @@ import { TartgetGridProps } from ".."
 import { router } from "expo-router"
 import BlurViewTargetMiniCard from "@/components/BlurViewTargetMiniCard"
 
+
 type Props = {
     data:TartgetGridProps[]
     
@@ -22,10 +23,9 @@ export function GridType2({data}:Props){
 
                 renderItem={({item})=>(
                     <BlurViewTargetMiniCard 
-                   
-                    item={item}
-
-                    onPress={()=>{ router.push(`/stack/target-details/${item.id}`)}}
+                        item={item}
+                        onDetails={()=>{ router.push(`/stack/target-details/${item.id}`)}}
+                        onInsertAmount={()=>{   router.push(`/stack/target-insert-amount/${item.id}`)} }
                     />
                 )}
             >

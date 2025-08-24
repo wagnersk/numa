@@ -17,6 +17,7 @@
                         <Stack.Screen name="analysis/transactions/[id]" />
 
                         <Stack.Screen name="index/target-details/[id]" />
+                        <Stack.Screen name="index/target-insert-amount/[id]" />
                         
                         <Stack.Screen name="target/select-image" />
                         <Stack.Screen name="target/select-color" />

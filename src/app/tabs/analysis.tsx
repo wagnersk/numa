@@ -1,188 +1,165 @@
-import { router } from "expo-router";
-import React, { useState } from "react";
-import {
-    View,
-    Text,
-    TouchableOpacity,
-    StyleSheet,
-    ScrollView
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { colors } from "@/theme/colors";
-import { fontFamily } from "@/theme";
-import AntDesign from "@expo/vector-icons/AntDesign";
-import { PieChart } from "react-native-gifted-charts";
+import { router, useFocusEffect } from "expo-router";
+import React, { useState, useCallback, useMemo } from "react";
+import { View, Text, StyleSheet, Alert, TouchableOpacity } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { colors, fontFamily } from "@/theme";
+import { useTargetDatabase } from "@/database/useTargetDatabase";
+import { useTransactionsDatabase } from "@/database/useTransactionsDatabase";
+import { TransactionTypes } from "@/utils/TransactionTypes";
+import { numberToCurrency } from "@/utils/numberToCurrency";
+import dayjs from "dayjs";
+import ChartSection from "@/components/ChartSection";
+import TransactionList from "@/components/TransactionList";
+
+export type TargetProps = {
+  id: number;
+  value: number;
+  color: string;
+  text: string;
+  pillName: string;
+};
+
+export type TransactionProps = {
+  color: string;
+  text: string;
+  pillName: string;
+  value: string;
+  id: string;
+  target_id: number;
+  date: string;
+  description?: string;
+  type: TransactionTypes;
+};
 
 export default function Analysis() {
-    const [selectedPill, setSelectedPill] = useState(0);
+  const insets = useSafeAreaInsets();
 
-    const pills = ["Pílula", "Pílula", "Pílula"];
+  const targetDatabase = useTargetDatabase();
+  const transactionsDatabase = useTransactionsDatabase();
 
-    const pieData = [
-        { value: 500, color: "#FF007F" },
-        { value: 400, color: "#0066FF" },
-        { value: 350, color: "#4CAF50" },
-        { value: 200, color: "#9C27B0" },
-        { value: 150, color: "#FFEB3B" },
-        { value: 300, color: "#FF5722" },
-        { value: 250, color: "#8BC34A" }
-    ];
+  const [transactions, setTransactions] = useState<TransactionProps[]>([]);
+  const [targets, setTargets] = useState<TargetProps[]>([]);
+  const [isFetching, setIsFetching] = useState(true);
+  const [selectedPill, setSelectedPill] = useState(0);
 
-    const transactions = [
-        { id: "1", name: "Nome da meta", color: "#00C853", amount: "+ R$ 250,00" },
-        { id: "2", name: "Nome da meta", color: "#E91E63", amount: "+ R$ 250,00" },
-        { id: "3", name: "Nome da meta", color: "#2962FF", amount: "+ R$ 250,00" },
-        { id: "4", name: "Nome da meta", color: "#2962FF", amount: "+ R$ 250,00" },
-        { id: "5", name: "Nome da meta", color: "#00C853", amount: "+ R$ 250,00" },
-        { id: "6", name: "Nome da meta", color: "#FF9800", amount: "+ R$ 250,00" }
-    ];
+  async function fetchTargets(): Promise<TargetProps[]> {
+    try {
+      const response = await targetDatabase.showAll();
+      return response.map((item) => ({
+        id: item.id,
+        value: item.current,
+        color: item.color,
+        text: String(item.current),
+        pillName: item.name,
+      }));
+    } catch (error) {
+      Alert.alert("Erro", "Não foi possível carregar as metas.");
+      return [];
+    }
+  }
 
-    return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: colors.gray[100] }}>
-            <ScrollView contentContainerStyle={styles.container}>
-                {/* Header */}
-                <View style={styles.header}>
-                    <Text style={styles.title}>Análise</Text>
-                </View>
+  async function fetchTransactions() {
+    try {
+      const response = await transactionsDatabase.listAll();
+      return response.map((item) => ({
+        id: String(item.id),
+        target_id: item.target_id,
+        value: numberToCurrency(item.amount),
+        date: dayjs(item.created_at).format("DD/MM/YYYY [às] HH:mm"),
+        description: item.observation ?? null,
+        type: item.amount < 0 ? TransactionTypes.Output : TransactionTypes.Input,
+      }));
+    } catch (error) {
+      Alert.alert("Erro", "Não foi possível carregar as transações.");
+      return [];
+    }
+  }
 
-                {/* Gráfico */}
-                <View style={{ alignItems: "center", marginBottom: 20 }}>
-                    <PieChart
-                        data={pieData}
-                        donut
-                        showText
-                        textColor={colors.black}
-                        textSize={20}
-                        radius={100}
-                        innerRadius={70}
-                        innerCircleColor={colors.gray[100]}
-                        centerLabelComponent={() => (
-                            <Text style={styles.chartValue}>R$ 2.500</Text>
-                        )}
-                        focusOnPress
-                        animationDuration={800}
-                    />
-                </View>
+  async function fetchData() {
+    const [targetData, transactionsData] = await Promise.all([
+      fetchTargets(),
+      fetchTransactions(),
+    ]);
 
-                {/* Botões pílula */}
-                <View style={styles.pillsRow}>
-                    {pills.map((pill, index) => (
-                        <TouchableOpacity
-                            key={index}
-                            style={[
-                                styles.pill,
-                                selectedPill === index && styles.pillSelected
-                            ]}
-                            onPress={() => setSelectedPill(index)}
-                        >
-                            <Text
-                                style={[
-                                    styles.pillText,
-                                    selectedPill === index && styles.pillTextSelected
-                                ]}
-                            >
-                                {pill}
-                            </Text>
-                        </TouchableOpacity>
-                    ))}
-                </View>
+    setTargets(targetData);
 
-                {/* Transações */}
-                <View style={styles.transactionsHeader}>
-                    <Text style={styles.transactionsTitle}>Transações</Text>
-                    <TouchableOpacity>
-                        <Text style={styles.viewAll}>Ver tudo</Text>
-                    </TouchableOpacity>
-                </View>
+    const formattedTransactions = transactionsData.map((t) => {
+      const target = targetData.find((tg) => tg.id === t.target_id);
+      return {
+        ...t,
+        color: target?.color || colors.black,
+        text: target?.text || "",
+        value: numberToCurrency(target?.value || 0),
+        pillName:target.pillName
+      };
+    });
 
-                {transactions.map(item => (
-                    <View key={item.id} style={styles.transactionRow}>
-                        <Text style={[styles.transactionName, { color: item.color }]}>
-                            {item.name}
-                        </Text>
-                        <Text style={styles.transactionAmount}>{item.amount}</Text>
-                    </View>
-                ))}
-            </ScrollView>
-        </SafeAreaView>
-    );
+    setTransactions(formattedTransactions);
+    setIsFetching(false);
+  }
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchData();
+    }, [])
+  );
+
+  const total = numberToCurrency(
+    targets.reduce((sum, t) => sum + t.value, 0)
+  );
+
+  const filteredTransactions = useMemo(() => {
+    if (selectedPill === 0) return transactions;
+    const id = targets[selectedPill - 1]?.id;
+    return transactions.filter((t) => t.target_id === id);
+  }, [selectedPill, transactions, targets]);
+
+  return (
+    <View
+      style={[
+        styles.container,
+        { paddingTop: insets.top },
+      ]}
+    >
+      <View style={styles.header}>
+        <Text style={styles.title}>Análise</Text>
+      </View>
+      <TouchableOpacity onPress={() => router.push("/drawer/legend")}>
+      <Text style={{ color: "blue" }}>Ver lista completa</Text>
+    </TouchableOpacity>
+
+      <ChartSection
+        targets={targets}
+        total={total}
+        selectedPill={selectedPill}
+        setSelectedPill={setSelectedPill}
+      />
+
+      <TransactionList
+        transactions={filteredTransactions}
+        onViewAll={() => router.push(`stack/analysis/transactions`)}
+      />
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        paddingHorizontal: 24,
-        paddingBottom: 40
-    },
-    header: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 16,
-        marginBottom: 20,
-        justifyContent:'center'
-    },
-    title: {
-        fontSize: 22,
-        fontFamily: fontFamily.regular,
-        color: colors.black
-    },
-    chartValue: {
-        fontSize: 20,
-        fontFamily: fontFamily.regular,
-        color: colors.black
-    },
-    pillsRow: {
-        flexDirection: "row",
-        justifyContent: "center",
-        gap: 12,
-        marginBottom: 20
-    },
-    pill: {
-        paddingVertical: 8,
-        paddingHorizontal: 18,
-        borderRadius: 50,
-        backgroundColor: colors.gray[200]
-    },
-    pillSelected: {
-        backgroundColor: colors.black
-    },
-    pillText: {
-        fontFamily: fontFamily.regular,
-        fontSize: 14,
-        color: colors.black
-    },
-    pillTextSelected: {
-        color: colors.white
-    },
-    transactionsHeader: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginBottom: 12
-    },
-    transactionsTitle: {
-        fontFamily: fontFamily.bold,
-        fontSize: 18,
-        color: colors.black
-    },
-    viewAll: {
-        fontFamily: fontFamily.regular,
-        fontSize: 14,
-        color: colors.black
-    },
-    transactionRow: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        paddingVertical: 8,
-        borderBottomWidth: 1,
-        borderBottomColor: colors.gray[300]
-    },
-    transactionName: {
-        fontFamily: fontFamily.regular,
-        fontSize: 14
-    },
-    transactionAmount: {
-        fontFamily: fontFamily.regular,
-        fontSize: 14,
-        color: colors.gray[700]
-    }
+  container: {
+    flex: 1,
+    backgroundColor: colors.gray[100],
+    paddingHorizontal: 24,
+    gap: 12,
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 20,
+  },
+  title: {
+    fontSize: 22,
+    fontFamily: fontFamily.regular,
+    color: colors.black,
+
+  },
 });

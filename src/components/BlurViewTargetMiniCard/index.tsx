@@ -7,14 +7,17 @@ import { colors, fontFamily } from "@/theme";
 import StaticCircularProgressComponent from "../StaticCircularProgressComponent";
 import { TartgetGridProps } from "../TargetGrid";
 import { getLocalPhotoUri } from "@/utils/getLocalPhotoUri";
+import AntDesign from '@expo/vector-icons/AntDesign';
 
 type Props = {
-    onPress: () => void;
+    onDetails: () => void;
+    onInsertAmount: () => void;
     item: TartgetGridProps;
 }
 
 export default function BlurViewTargetMiniCard({ 
-    onPress,
+    onDetails,
+    onInsertAmount,
     item,
 }: Props) {
     const params = useLocalSearchParams<{id: string}>();
@@ -26,39 +29,49 @@ export default function BlurViewTargetMiniCard({
     }
 
     return (
-        <TouchableOpacity 
-            style={styles.container}
-            onPress={onPress}
-        >
+        <View  style={styles.container}>
+
+                <BlurView
+                    tint="light"
+                    intensity={800}
+                    style={styles.openEditTarget}>
+                       <TouchableOpacity activeOpacity={0.7} onPress={onDetails}>
+                            <AntDesign name="arrowsalt" size={24} color="black" />
+                    </TouchableOpacity>
+                </BlurView>
+
             <ImageBackground
                 source={{ uri: getLocalPhotoUri(item.photo_file_name) }}
                 style={styles.imageStyle}
                 resizeMode="cover"
             >
-                <View style={styles.squareBlurCircle1}>
-                <StaticCircularProgressComponent
-                    size={40}
-                    width={4}
-                    fill={item.percentage}
-                    lineCap="round"
-                    rotation={0}
-                    tintColor={item.photo_color}
-                    backgroundColor={colors.gray[100]}
-                    textFontStyle={fontFamily.light}
-                    fontSize={10}
-                />
-                </View>
-
+                <TouchableOpacity
+                    style={styles.circleWrapper}
+                    activeOpacity={0.7}>
+                    <View style={styles.squareBlurCircle1}>
+                    <StaticCircularProgressComponent
+                        size={40}
+                        width={4}
+                        fill={item.percentage}
+                        lineCap="round"
+                        rotation={0}
+                        tintColor={item.photo_color}
+                        backgroundColor={colors.gray[100]}
+                        textFontStyle={fontFamily.light}
+                        fontSize={10}
+                        />
+                    </View>
                 <BlurView
                     tint="light"
                     intensity={100}
-                    style={styles.squareBlurCircle2}
-                >
+                    style={styles.blueView}
+                    >
                     <View style={styles.textWrapper}>
                         <Text style={styles.targetGoal}>{item.name}</Text>
                     </View>
                 </BlurView>
+                    </TouchableOpacity>
             </ImageBackground>
-        </TouchableOpacity>
+        </View>
     );
 }

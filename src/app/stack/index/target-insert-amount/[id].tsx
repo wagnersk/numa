@@ -5,7 +5,7 @@ import { Blurhash } from "react-native-blurhash";
 
 import { colors } from "@/theme";
 import AntDesign from '@expo/vector-icons/AntDesign';
-import BlurViewTargetDetails from "@/components/BlurViewTargetDetails";
+import BlurViewTargetInsertAmount from "@/components/BlurViewTargetInsertAmount";
 import { useCallback, useState, useRef } from "react";
 import { useTargetDatabase } from "@/database/useTargetDatabase";
 import { TartgetGridProps } from "@/components/TargetGrid";
@@ -13,7 +13,7 @@ import { numberToCurrency } from "@/utils/numberToCurrency";
 import { getLocalPhotoUri } from "@/utils/getLocalPhotoUri";
 import { getContrastColor } from "@/utils/getContrastColor";
 
-export default function TargetDetail() {
+export default function TargetInsertAmount() {
   const params = useLocalSearchParams<{ id: string }>();
   const [target, setTarget] = useState<TartgetGridProps | null>(null);
   const targetDatabase = useTargetDatabase();
@@ -92,16 +92,18 @@ export default function TargetDetail() {
       )}
 
       <BlurView 
-      tint="dark"
-      intensity={100} style={styles.backButton}>
+        tint="dark"
+        intensity={100} style={styles.backButton}>
         <TouchableOpacity onPress={router.back}>
           <AntDesign name="arrowleft" size={24} color={colors.white} />
         </TouchableOpacity>
       </BlurView>
 
-      <BlurViewTargetDetails 
-      contrastColor={contrastColor}
-      id={params.id}
+      
+
+      <BlurViewTargetInsertAmount
+       contrastColor={contrastColor}
+       id={params.id}
        data={target}  
        />
     </ImageBackground>
@@ -119,6 +121,7 @@ export const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 50,
     overflow: "hidden",
+    zIndex:2
   },
   blurhashContainer: {
     ...StyleSheet.absoluteFillObject,

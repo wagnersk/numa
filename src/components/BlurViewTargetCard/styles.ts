@@ -13,7 +13,13 @@ export const styles = StyleSheet.create({
         position: 'absolute',
         zIndex: 1,
         right:8,
-        bottom: 36,
+        top: 8,
+        justifyContent:'center',
+        alignItems:'center',
+        height:48,
+        width:48,
+        borderRadius:24,
+        overflow:'hidden'
         
     },
     squareBlurCircle2: { 

@@ -17,7 +17,7 @@ type Props = {
   lineCap: "butt" | "square" | "round";
 };
 
-export default function ({
+export default function StaticCircularProgressComponent({
   size,
   width,
   fill,

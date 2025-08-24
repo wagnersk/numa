@@ -27,11 +27,11 @@ import { useTargetStore } from "@/store/useImageStore";
 import { useTargetDatabase } from "@/database/useTargetDatabase";
 import { useTransactionsDatabase } from "@/database/useTransactionsDatabase";
 import { usePhotosDatabase } from "@/database/usePhotosDatabase";
-import { getRandomColor } from "@/utils/getRandomColor";
-
+ 
 import { SafeAreaView } from "react-native-safe-area-context"; 
 import { addDays } from "@/utils/addDays";
 import { getLocalPhotoUri } from "@/utils/getLocalPhotoUri";
+import { getRandomUnusedColor } from "@/utils/getRandomColor";
 
 export type TartgetGridProps = {
     id?:number;
@@ -175,13 +175,11 @@ export function TargetForm({
   try {
     let photoData = null;
 
-    // Se houver nova foto selecionada
     if (photo) {
       photoData = await UnsplashService.downloadPhoto(photo);
       await UnsplashService.deleteLocalPhoto(data.photo_file_name);
     }
 
-    // Atualiza tabela targets
     await targetDatabase.update({
       id: data.id,
       name: data.name,
@@ -191,18 +189,10 @@ export function TargetForm({
       end_date: data.end_date,
     });
 
-    // Atualiza foto se houver nova foto
-    console.log(`fora`)
     if (photoData) {
-      console.log(`dentro`,{
-        id: data.id, // assumindo que o id da foto é igual ao target_id
-        file_name: photoData.file_name,
-        color: photoData.color,
-        blur_hash: photoData.blur_hash,
-        direct_url: photoData.direct_url,
-      })
+ 
       await photosDatabase.update({
-        id: data.id, // assumindo que o id da foto é igual ao target_id
+        id: data.id,  
         file_name: photoData.file_name,
         color: photoData.color,
         blur_hash: photoData.blur_hash,
@@ -281,21 +271,16 @@ export function TargetForm({
           try {
             setIsLoading(true);
 
-            // 1️⃣ Deletar a foto local
             await UnsplashService.deleteLocalPhoto(targetData.photo_file_name);
 
-            // 2️⃣ Deletar registro da foto no SQLite
             await photosDatabase.remove(Number(targetData.id));
 
-            // 3️⃣ Deletar transações relacionadas
             await transactionsDatabase.remove(Number(targetData.id));
 
-            // 4️⃣ Deletar a meta
             await targetDatabase.remove(Number(targetData.id));
 
             Alert.alert("Meta deletada com sucesso!");
 
-            // Resetar estado e voltar para a lista
             resetTempTarget();
             clearData();
             router.push("/tabs");
@@ -371,12 +356,20 @@ export function TargetForm({
     )
 
     useEffect(() => {
-      if (!color) {
-        setTempTarget({ color: getRandomColor() });
+      async function assignRandomColor() {
+        // Buscar todas as cores já usadas (ex: do banco)
+        const allTargets = await targetDatabase.showAll();
+        const usedColors = allTargets.map((t) => t.color).filter(Boolean);
+
+        if (!color) {
+          const randomColor = getRandomUnusedColor(usedColors);
+          setTempTarget({ color: randomColor });
+        }
       }
 
-    },[])
- 
+      assignRandomColor();
+}, []);
+
 
   return (
      <SafeAreaView style={{ flex: 1, backgroundColor: colors.gray[100] }}>
