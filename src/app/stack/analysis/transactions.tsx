@@ -1,15 +1,18 @@
 import React, { useMemo } from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 import { useAnalysisStore } from '@/store/useAnalysisStore';
-import TransactionItem from '@/components/TransactionItem';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, fontFamily } from '@/theme';
 import { router } from 'expo-router';
+import AntDesign from '@expo/vector-icons/AntDesign';
+import TransactionDetailedItem from '@/components/TransactionIDetailedtem';
+import { useTargetStore } from '@/store/useTargetStore';
 
 export default function TransactionsScreen() {
   const { transactions, targets, selectedPill } = useAnalysisStore();
+  const {  target } = useTargetStore();
   const insets = useSafeAreaInsets();
-
+console.log(target)
   const filteredTransactions = useMemo(() => {
     if (selectedPill === 0) {
       return transactions;
@@ -23,9 +26,12 @@ export default function TransactionsScreen() {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-            <Text style={styles.backButton}>Voltar</Text>
-        </TouchableOpacity>
+                 <View >
+                        <TouchableOpacity style={styles.backButton} onPress={router.back}>
+                            <AntDesign name="arrowleft" size={24} color={colors.black} />
+                        </TouchableOpacity>
+                    </View>
+
 
         <Text style={styles.title}>Transações</Text>
         <View style={{ width: 50 }} />
@@ -35,7 +41,7 @@ export default function TransactionsScreen() {
       <FlatList
         data={filteredTransactions}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <TransactionItem item={item} />}
+        renderItem={({ item }) => <TransactionDetailedItem item={item} />}
         contentContainerStyle={styles.list}
         ListEmptyComponent={<Text style={styles.emptyText}>Nenhuma transação encontrada.</Text>}
       />
@@ -71,9 +77,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.gray[200],
   },
   backButton: {
-    fontSize: 16,
-    fontFamily: fontFamily.regular,
-    color: colors.black,
+    position: 'absolute',
+        top: -12,
+        left: 0,
+        zIndex: 10,
   },
   list: {
     paddingHorizontal: 16,

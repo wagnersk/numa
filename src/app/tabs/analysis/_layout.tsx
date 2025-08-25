@@ -9,6 +9,7 @@ export default function AnalysisLayout() {
         headerShown: false,
       }}
       drawerContent={(props) => <LegendScreen {...props} />}
+      
     >
       <Drawer.Screen
         name="index"

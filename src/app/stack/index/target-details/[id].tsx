@@ -9,46 +9,26 @@ import BlurViewTargetDetails from "@/components/BlurViewTargetDetails";
 import { useCallback, useState, useRef } from "react";
 import { useTargetDatabase } from "@/database/useTargetDatabase";
 import { TartgetGridProps } from "@/components/TargetGrid";
-import { numberToCurrency } from "@/utils/numberToCurrency";
 import { getLocalPhotoUri } from "@/utils/getLocalPhotoUri";
 import { getContrastColor } from "@/utils/getContrastColor";
+import { useAnalysisStore } from "@/store/useAnalysisStore";
 
 export default function TargetDetail() {
   const params = useLocalSearchParams<{ id: string }>();
   const [target, setTarget] = useState<TartgetGridProps | null>(null);
   const targetDatabase = useTargetDatabase();
 
+    const { 
+      fetchTargetById
+    } = useAnalysisStore();
+
   // Animated opacity do Blurhash
   const blurOpacity = useRef(new Animated.Value(1)).current;
 
-  async function fetchTarget(): Promise<TartgetGridProps | undefined> {
-    try {
-      const response = await targetDatabase.show(params.id);
-
-      return {
-        id: Number(response.id),
-        target: numberToCurrency(response.amount),
-        currency: numberToCurrency(response.current),
-        color: response.color,
-        end_date: response.end_date,
-        name: response.name,
-        percentage: Number(response.percentage.toFixed(2)),
-        current: response.current,
-        start_date: response.start_date,
-        photo_color: response.photo_color,
-        photo_blur_hash: response.photo_blur_hash,
-        photo_direct_url: response.photo_direct_url,
-        photo_file_name: response.photo_file_name,
-      };
-    } catch (error) {
-      Alert.alert("Erro", "Não foi possível carregar as metas.");
-      console.log(error);
-    }
-  }
 
   async function fetchData() {
     setTarget(null);
-    const targetData = await fetchTarget();
+    const targetData = await fetchTargetById(params.id, targetDatabase);
     if (targetData) setTarget(targetData);
   }
 

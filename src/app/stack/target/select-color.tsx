@@ -4,7 +4,7 @@ import { useFocusEffect, useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { colors } from "@/theme";
-import { useTargetStore } from "@/store/useImageStore";
+import { useTargetStore } from "@/store/useTargetStore";
 import { colorsList } from "@/utils/colorList";
 import { TargetResponse, useTargetDatabase } from "@/database/useTargetDatabase";
 

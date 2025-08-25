@@ -47,7 +47,9 @@ export default function BlurViewTargetMiniCard({
             >
                 <TouchableOpacity
                     style={styles.circleWrapper}
-                    activeOpacity={0.7}>
+                    activeOpacity={0.7}
+                    onPress={onInsertAmount}
+                    >
                     <View style={styles.squareBlurCircle1}>
                     <StaticCircularProgressComponent
                         size={40}

@@ -4,9 +4,10 @@ import AntDesign from "@expo/vector-icons/AntDesign";
 import { colors, fontFamily } from "@/theme";
 import { TransactionProps } from "@/store/useAnalysisStore";
 
-export default function TransactionIDetailedtem({ item }: { item: TransactionProps }) {
+export default function TransactionDetailedItem({ item }: { item: TransactionProps }) {
   return (
     <View style={styles.row}>
+
 
     <View style={[styles.colorBar, { backgroundColor: item.color }]} />
 

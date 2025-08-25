@@ -40,6 +40,7 @@ interface AnalysisState {
   setSelectedPill: (index: number) => void;
   setTransactionFilter: (filter: TransactionFilter) => void;
   fetchTargets: (db: ReturnType<typeof useTargetDatabase>) => Promise<TargetProps[]>;
+  fetchTargetById: (id: string, db: ReturnType<typeof useTargetDatabase>) => Promise<any | null>;
   fetchTransactions: (db: ReturnType<typeof useTransactionsDatabase>, targets: TargetProps[]) => Promise<void>;
 }
 
@@ -72,6 +73,31 @@ export const useAnalysisStore = create<AnalysisState>((set) => ({
     } catch (error) {
       Alert.alert("Erro", "Não foi possível carregar as metas.");
       return [];
+    }
+  },
+
+    fetchTargetById: async (id, db) => {
+    try {
+      const response = await db.show(id);
+
+      return {
+        id: Number(response.id),
+        target: numberToCurrency(response.amount),
+        currency: numberToCurrency(response.current),
+        color: response.color,
+        end_date: response.end_date,
+        name: response.name,
+        percentage: Number(response.percentage.toFixed(2)),
+        current: response.current,
+        start_date: response.start_date,
+        photo_color: response.photo_color,
+        photo_blur_hash: response.photo_blur_hash,
+        photo_direct_url: response.photo_direct_url,
+        photo_file_name: response.photo_file_name,
+      };
+    } catch (error) {
+      Alert.alert("Erro", "Não foi possível carregar a meta.");
+      return null;
     }
   },
 

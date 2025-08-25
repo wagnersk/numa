@@ -1,5 +1,5 @@
 // components/TargetForm.tsx
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
-  Alert,
   StyleSheet,
   Image,
 } from "react-native";
@@ -20,30 +19,16 @@ import { fontFamily } from "@/theme";
 import { CurrencyInput } from "@/components/CurrencyInput";
 import { Button } from "@/components/Button";
 import { formatDate } from "@/utils/formatDate";
-import { UnsplashService } from "@/services/UnsplashService";
 
 import { useFocusEffect, useRouter } from "expo-router";
-import { useTargetStore } from "@/store/useImageStore";
+import { TargetData, useTargetStore } from "@/store/useTargetStore";
 import { useTargetDatabase } from "@/database/useTargetDatabase";
 import { useTransactionsDatabase } from "@/database/useTransactionsDatabase";
 import { usePhotosDatabase } from "@/database/usePhotosDatabase";
- 
+
 import { SafeAreaView } from "react-native-safe-area-context"; 
 import { addDays } from "@/utils/addDays";
 import { getLocalPhotoUri } from "@/utils/getLocalPhotoUri";
-import { getRandomUnusedColor } from "@/utils/getRandomColor";
-
-export type TartgetGridProps = {
-    id?:number;
-    name: string;
-    currency: string;
-    photo_file_name: string;
-    color: string;
-    current: number;
-    target: number;
-    start_date: number;
-    end_date: number;
-}
 
 interface TargetFormProps {
   editting:boolean
@@ -58,23 +43,21 @@ export function TargetForm({
   onEditPhoto,
   paramsId,
 }: TargetFormProps) {
- 
-    const router = useRouter();
-    
-    const color = useTargetStore((state) => state.target.color);
-    const photo = useTargetStore((state) => state.target.photo);
-    const setTempTarget = useTargetStore((state) => state.setTempTarget);
-    const resetTempTarget = useTargetStore((state) => state.resetTempTarget);
-    
-    const targetDatabase = useTargetDatabase();
-    const transactionsDatabase = useTransactionsDatabase();
-    const photosDatabase = usePhotosDatabase();
-  
-    const [isLoading, setIsLoading] = useState(false);
-    const currenciesArray = ["BRL", "USD", "EUR"];
+  const router = useRouter();
+  const {
+    isLoading,
+    fetchTarget,
+    handleSubmit,
+    deleteTarget,
+    initializeNewTarget,
+    resetStore,
+    setTempTarget,
+  } = useTargetStore();
 
-  
-  const [targetData, setTargetData] = useState<TartgetGridProps>({
+  const photo = useTargetStore(state => state.tempTarget.photo);
+  const color = useTargetStore(state => state.tempTarget.color);
+
+  const initialTargetData: TargetData = {
     name: "",
     currency: "BRL",
     current: 0,
@@ -83,293 +66,70 @@ export function TargetForm({
     end_date: 0,
     color: colors.white,
     photo_file_name: null,
-  });
+  };
 
+  const [targetData, setTargetData] = useState<TargetData>(initialTargetData);
 
-  const [ isFetching, setIsFetching ] = useState(true)
+  const targetDatabase = useTargetDatabase();
+  const transactionsDatabase = useTransactionsDatabase();
+  const photosDatabase = usePhotosDatabase();
 
-  const [isStartPickerVisible, setStartPickerVisible] = useState(false);
-  const [isEndPickerVisible, setEndPickerVisible] = useState(false);
+  const [ isStartPickerVisible, setStartPickerVisible ] = useState(false);
+  const [ isEndPickerVisible, setEndPickerVisible ] = useState(false);
 
-  function handleSetName(name: string) {
-    setTargetData((prev) => ({ ...prev, name }));
-  }
+  const currenciesArray = ["BRL", "USD", "EUR"];
 
-  function handleSelectCurrency(currency: string) {
-    setTargetData((prev) => ({ ...prev, currency }));
-  }
+  // Este efeito garante que o estado temporário (cor/foto) seja limpo
+  // sempre que uma nova sessão de criação ou edição for iniciada.
+/*   useEffect(() => {
+    resetStore();
+  }, [editting, paramsId]); */
 
-  function handleSelectStartValue(current: number) {
-    setTargetData((prev) => ({ ...prev, current }));
-  }
- 
-  function handleSetGoalValue(target: number) {
-    setTargetData((prev) => ({ ...prev, target }));
-  }
-
-  function handleSetStartDate(start_date: Date) {
-    const formattedStartDate = start_date.getTime()
-    setTargetData((prev) => ({ ...prev, start_date:formattedStartDate }));
-    setStartPickerVisible(false);
-  }
-
-  function handleSetEndDate(end_date: Date) {
-        const formattedStartDate = end_date.getTime()
-
-    setTargetData((prev) => ({ ...prev, end_date:formattedStartDate }));
-    setEndPickerVisible(false);
-  }
-
-  async function create(data:TartgetGridProps) {
- 
-    try {
-      setIsLoading(true);
-
-      const photoData = await UnsplashService.downloadPhoto(photo);
- 
-      const targetId = await targetDatabase.create({
-        name: data.name,
-        amount: data.target,
-        currency: data.currency,
-        color: color,
-        start_date: data.start_date,
-        end_date: data.end_date,
-      });
-
-      await transactionsDatabase.create({
-        amount: data.current,
-        target_id: targetId,
-        observation: "Saldo inicial",
-      });
- 
-      await photosDatabase.create({
-        target_id: targetId,
-        file_name: photoData.file_name,
-        color: photoData.color,
-        blur_hash: photoData.blur_hash,
-        direct_url: photoData.direct_url,
-      });
-
-   Alert.alert("Nova Meta", "Meta criada com sucesso!", [
-     {
-       text: "Ok",
-       onPress: () => {
-          resetTempTarget();
-          clearData()
-            router.push("/tabs");
-          },
-        },
-      ]);
-    } catch (error) {
-      Alert.alert("Erro", "Não foi possível criar a meta.");
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
- async function update(data: TartgetGridProps) {
-
-
-  setIsLoading(true);
-
-  try {
-    let photoData = null;
-
-    if (photo) {
-      photoData = await UnsplashService.downloadPhoto(photo);
-      await UnsplashService.deleteLocalPhoto(data.photo_file_name);
-    }
-
-    await targetDatabase.update({
-      id: data.id,
-      name: data.name,
-      amount: data.target,
-      currency: data.currency,
-      color: color,
-      end_date: data.end_date,
-    });
-
-    if (photoData) {
- 
-      await photosDatabase.update({
-        id: data.id,  
-        file_name: photoData.file_name,
-        color: photoData.color,
-        blur_hash: photoData.blur_hash,
-        direct_url: photoData.direct_url,
-      });
-    }
-
-
-    Alert.alert("Meta Atualizada", "A meta foi atualizada com sucesso!", [
-      {
-        text: "Ok",
-        onPress: () => {
-          resetTempTarget();
-          clearData();
-          router.push("/tabs");
-        },
-      },
-    ]);
-  } catch (error) {
-    console.log(error);
-    Alert.alert("Erro", "Não foi possível atualizar a meta.");
-  } finally {
-    setIsLoading(false);
-  }
-}
-  
-  async function handleSubmit() {
-     if (!targetData.name.trim() || Number(targetData.target) <= 0) {
-      return Alert.alert("Atenção", "Preencha nome e valor da meta.");
-    }
-
-    if (!editting && !photo) {
-      Alert.alert("Atenção", "Adicione uma imagem para continuar.");
-      return;
-    }
-    if (editting && targetData.photo_file_name === null) {
-      Alert.alert("Atenção", "Adicione uma imagem para continuar.");
-      return;
-    }
-      // 3️⃣ Validar datas
-    if (!targetData.start_date || !targetData.end_date) {
-      return Alert.alert("Atenção", "Selecione datas válidas para a meta.");
-    }
-    if (targetData.end_date <= targetData.start_date) {
-      return Alert.alert("Atenção", "A data de término deve ser maior que a data de início.");
-    }
-
-      if (targetData.current > targetData.target && targetData.current > 0 && targetData.target > 0) {
-      return Alert.alert("Atenção", "Valores inválidos para saldo ou objetivo.");
-    }
-
-
-    if(editting ){ 
-      await update(targetData)
-    
-    } else {
-      await create(targetData); 
-
-    }
-  }
-
- async function handleDelete() {
-
-  Alert.alert(
-    "Atenção",
-    "Deseja realmente deletar essa meta?",
-    [
-      {
-        text: "Cancelar",
-        style: "cancel",
-      },
-      {
-        text: "Deletar",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            setIsLoading(true);
-
-            await UnsplashService.deleteLocalPhoto(targetData.photo_file_name);
-
-            await photosDatabase.remove(Number(targetData.id));
-
-            await transactionsDatabase.remove(Number(targetData.id));
-
-            await targetDatabase.remove(Number(targetData.id));
-
-            Alert.alert("Meta deletada com sucesso!");
-
-            resetTempTarget();
-            clearData();
-            router.push("/tabs");
-          } catch (error) {
-            console.log(error);
-            Alert.alert("Erro", "Não foi possível deletar a meta.");
-          } finally {
-            setIsLoading(false);
+  useFocusEffect(
+    useCallback(() => {
+      async function loadData() {
+        if (editting && paramsId) {
+          const fetchedData = await fetchTarget(paramsId, targetDatabase);
+          if (fetchedData) {
+            setTargetData(fetchedData);
+            // Não definimos a cor temporária aqui. A UI usará a cor de `targetData`
+            // como padrão. Se o usuário selecionar uma nova cor, ela será armazenada
+            // em `tempTarget` e terá precedência, resolvendo o bug de sobrescrita.
           }
-        },
-      },
-    ]
+        } else {
+           // Se não houver cor no estado temporário, significa que precisamos inicializar.
+           // Isso acontece na primeira carga após o reset no `useEffect`.
+           const { color } = useTargetStore.getState().tempTarget;
+           if (!color) {
+            initializeNewTarget(targetDatabase);
+          }
+        }
+      }
+      loadData();
+
+      return () => {
+        setTargetData(initialTargetData);
+        // Não resetamos o store aqui, pois isso limpa a seleção de foto/cor
+        // ao navegar para as telas de seleção. O useEffect na montagem cuida do reset.
+      };
+    }, [editting, paramsId])
   );
-}
- 
-  async function fetchTarget(): Promise<TartgetGridProps> {
-      try {
 
-        const response = await targetDatabase.show(paramsId)
-        return {
-            id:Number(response.id),
-            name: response.name,
-            currency: response.currency,
-            current:response.current,
-            target:response.amount,
-            start_date: response.start_date, 
-            end_date: response.end_date,
-            color: response.color,
-            photo_file_name: response.photo_file_name,
-        }
-    
-      } catch (error) {
-        Alert.alert('Erro', 'Não foi possível carregar as metas.')
-        console.log(error)
-      }
-  }
+  const handleFormSubmit = () => {
+    handleSubmit({ targetDatabase, transactionsDatabase, photosDatabase }, editting, targetData);
+  };
 
+  const handleDelete = () => {
+    deleteTarget({ targetDatabase, transactionsDatabase, photosDatabase }, targetData);
+  };
 
-    async function fetchData() {
-      const targetDataPromise = fetchTarget()
-      
-      const [target] = await Promise.all([
-        targetDataPromise,
-      ])
-      
-      
-      setTargetData(target) 
-      setIsFetching(false)
-    }
+  const handleSetData = (data: Partial<TargetData>) => {
+    setTargetData((prev) => ({ ...prev, ...data }));
+  };
 
-
-    async function clearData() {
-          setTargetData({
-            name: "",
-            currency: "BRL",
-            current: 0,
-            target: 0,
-            start_date: 0,
-            end_date: 0,
-            color: colors.white,
-            photo_file_name: '',
-          }) 
-          setIsFetching(false)
-    }
-    
-
-    useFocusEffect(
-      useCallback(() => {
-        if(editting){
-          fetchData()
-        } 
-      }, []),
-    )
-
-    useEffect(() => {
-      async function assignRandomColor() {
-        // Buscar todas as cores já usadas (ex: do banco)
-        const allTargets = await targetDatabase.showAll();
-        const usedColors = allTargets.map((t) => t.color).filter(Boolean);
-
-        if (!color) {
-          const randomColor = getRandomUnusedColor(usedColors);
-          setTempTarget({ color: randomColor });
-        }
-      }
-
-      assignRandomColor();
-}, []);
-
+  const handleSetDate = (key: 'start_date' | 'end_date', date: Date) => {
+    setTargetData((prev) => ({ ...prev, [key]: date.getTime() }));
+  };
 
   return (
      <SafeAreaView style={{ flex: 1, backgroundColor: colors.gray[100] }}>
@@ -378,8 +138,7 @@ export function TargetForm({
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         {/* Header */}
-
-        <View style={[styles.header, { justifyContent: editting ? "space-between":"center"   }]}>
+        <View style={[styles.header, { justifyContent: editting ? "space-between":"center" }]}>
           {editting && 
             <TouchableOpacity onPress={() => router.back()}>
               <Feather name="arrow-left" size={24} color={colors.black} />
@@ -399,7 +158,7 @@ export function TargetForm({
               placeholder="Nome da meta"
               placeholderTextColor={colors.gray[400]}
               value={targetData.name}
-              onChangeText={handleSetName}
+              onChangeText={(name) => handleSetData({ name })}
               maxLength={22}
               editable={!isLoading}
             />
@@ -411,25 +170,27 @@ export function TargetForm({
           <View style={styles.editButtonWrapper}>
             <TouchableOpacity
               onPress={onEditColor}
-              style={[styles.editButton, { backgroundColor: editting ?targetData.color :  color  }]}
+              style={[styles.editButton, { backgroundColor: color || targetData.color }]}
               disabled={isLoading}
             >
               <Feather name="edit-3" size={20} color={colors.black} />
             </TouchableOpacity>
           </View>
         </View>
+
         {/* Banner */}
         <TouchableOpacity
           onPress={onEditPhoto}
-          style={[styles.bannerUpload, 
-            photo && { borderWidth: 0 },
-            editting && { flex:1, borderWidth:0 }
+          style={[
+            styles.bannerUpload,
+            (photo || targetData.photo_file_name) && { borderWidth: 0 },
+            editting && { flex: 1 },
           ]}
           disabled={isLoading}
         >
           <View style={styles.bannerTextWrapper}>
             {photo || targetData.photo_file_name ? (
-              <Image source={{ uri: photo ? photo.urls.regular : getLocalPhotoUri(targetData.photo_file_name) }} style={styles.imagePreview} resizeMode="cover" />
+              <Image source={{ uri: photo ? photo.urls.regular : getLocalPhotoUri(targetData.photo_file_name!) }} style={styles.imagePreview} resizeMode="cover" />
             ) : (
               <>
                 <Feather name="image" size={24} color={colors.gray[500]} />
@@ -440,7 +201,6 @@ export function TargetForm({
         </TouchableOpacity>
 
         {/* Seleção de moeda */}
-
              {!editting &&
               <View style={styles.currencyRow}>
                 {currenciesArray.map((curr) => (
@@ -450,7 +210,7 @@ export function TargetForm({
                       styles.currencyButton,
                       targetData.currency === curr && styles.currencyButtonSelected,
                     ]}
-                    onPress={() => handleSelectCurrency(curr)}
+                    onPress={() => handleSetData({ currency: curr })}
                     disabled={isLoading}
                   >
                     <Text
@@ -481,7 +241,7 @@ export function TargetForm({
                 }
                 label="Saldo Inicial"
                 value={targetData.current}
-                onChangeValue={handleSelectStartValue}
+                onChangeValue={(current) => handleSetData({ current })}
                 editable={!isLoading}
                 />
             </View> }
@@ -496,7 +256,7 @@ export function TargetForm({
                 }
                 label="Objetivo"
                 value={targetData.target}
-                onChangeValue={handleSetGoalValue}
+                onChangeValue={(target) => handleSetData({ target })}
                 editable={!isLoading}
               />
             </View>
@@ -530,7 +290,7 @@ export function TargetForm({
               <TouchableOpacity
                 style={styles.dateButton}
                 onPress={() => setEndPickerVisible(true)}
-                disabled={isLoading || !targetData.start_date}
+                disabled={isLoading || (!editting && !targetData.start_date)}
               >
                 <Text
                   style={[
@@ -549,7 +309,10 @@ export function TargetForm({
             mode="date"
             locale="pt-BR"
             date={new Date()}
-            onConfirm={handleSetStartDate}
+            onConfirm={(date) => {
+              handleSetDate('start_date', date);
+              setStartPickerVisible(false);
+            }}
             onCancel={() => setStartPickerVisible(false)}
             minimumDate={new Date()}
             disabled={isLoading}
@@ -560,7 +323,10 @@ export function TargetForm({
             mode="date"
             locale="pt-BR"
             date={ addDays(new Date(targetData.start_date), 1)}
-            onConfirm={handleSetEndDate}
+            onConfirm={(date) => {
+              handleSetDate('end_date', date);
+              setEndPickerVisible(false);
+            }}
             onCancel={() => setEndPickerVisible(false)}
            /*  minimumDate={new Date(targetData.start_date) || undefined} */
             minimumDate={
@@ -568,15 +334,12 @@ export function TargetForm({
                 ? addDays(new Date(targetData.start_date), 1)
                 : undefined
             }
-
-
-
-            disabled={isLoading || !targetData.start_date}
+            disabled={isLoading || (!editting && !targetData.start_date)}
           />
         </View>
 
         {/* Botão */}
-        <Button title={editting ? "Atualizar" : "Cadastrar"} onPress={handleSubmit} isProcessing={isLoading} />
+        <Button title={editting ? "Atualizar" : "Cadastrar"} onPress={handleFormSubmit} isProcessing={isLoading} />
 
         {editting &&
         <Button title={'Deletar'} onPress={handleDelete} isProcessing={isLoading} type={'delete'}/>

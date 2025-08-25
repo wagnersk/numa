@@ -3,7 +3,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { colors, fontFamily } from "@/theme";
-import { useTargetStore } from "@/store/useImageStore";
+import { useTargetStore } from "@/store/useTargetStore";
 import { useEffect, useState } from "react";
 import { UnsplashPhoto, UnsplashService } from "@/services/UnsplashService";
 import { Blurhash } from "react-native-blurhash";

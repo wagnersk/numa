@@ -7,13 +7,13 @@ import { useRouter } from 'expo-router';
 import { colors, fontFamily } from '@/theme';
 import { Feather } from '@expo/vector-icons';
 import { UnsplashPhoto, UnsplashService } from '@/services/UnsplashService';
-import { useTargetStore } from '@/store/useImageStore';
+import { useTargetStore } from '@/store/useTargetStore';
 
 export default function GalleryScreen() {
   const [photos, setPhotos] = useState<UnsplashPhoto[]>([]);
   const [loading, setLoading] = useState(false);
   const [keyword, setKeyword] = useState('');
-  const photo = useTargetStore(state => state.target.photo);
+  const photo = useTargetStore(state => state.tempTarget.photo);
   const router = useRouter();
 
   async function loadRandomPhotos() {

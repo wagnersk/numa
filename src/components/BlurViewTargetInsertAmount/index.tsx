@@ -35,8 +35,42 @@ export default function BlurViewTargetInsertAmount({
     console.log("Edit target with ID:", id);
   }
 
-  
   async function handleSave() {
+  // Se for retirada, verifica se o valor não vai ficar negativo
+  if (form.type === TransactionTypes.Output && form.value > data.current) {
+    Alert.alert(
+      "Atenção",
+      `Você não pode retirar mais do que o saldo atual (${data.current}).`
+    );
+    return;
+  }
+
+  if (form.value <= 0) {
+    Alert.alert("Atenção", "Informe um valor maior que zero.");
+    return;
+  }
+
+  try {
+    await create({
+      target_id: Number(id),
+      amount: form.type === TransactionTypes.Input ? form.value : -form.value,
+      observation: form.reason || null,
+    });
+
+    setForm({ type: TransactionTypes.Input, reason: "", value: 0 }); // reset form
+
+    Alert.alert("Sucesso","Transação salva com sucesso!",[
+      {
+        text:'Ok',
+        onPress: router.back
+      }
+    ])
+  } catch (error) {
+    console.error(error);
+    Alert.alert("Erro", "Não foi possível salvar a transação.");
+  }
+}
+ /*  async function handleSave() {
     if (form.value <= 0) {
       Alert.alert("Atenção", "Informe um valor maior que zero.");
       return;
@@ -61,7 +95,7 @@ export default function BlurViewTargetInsertAmount({
       console.error(error);1000
       Alert.alert("Erro", "Não foi possível salvar a transação.");
     }
-  }
+  } */
 
   function handleChangeValue(current: number) {
     setForm(prev => ({ ...prev, value: current }))
