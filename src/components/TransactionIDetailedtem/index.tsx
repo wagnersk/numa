@@ -7,31 +7,39 @@ import { TransactionProps } from "@/store/useAnalysisStore";
 export default function TransactionDetailedItem({ item }: { item: TransactionProps }) {
   return (
     <View style={styles.row}>
-
-
-    <View style={[styles.colorBar, { backgroundColor: item.color }]} />
-
-      <View style={styles.content}>
-        <View style={styles.left}>
-          <Text
-            style={[
-              styles.name,
-              !item.description && styles.placeholder,
-            ]}
-            numberOfLines={1}
-          >
-            {item.pillName || "—"}
-          </Text>
+      <View style={[styles.colorBar, { backgroundColor: item.color }]} />
+        <View style={styles.content}>
+          <View style={styles.photo}>
+            <Text
+              style={[
+                styles.name,
+                !item.description && styles.placeholder,
+              ]}
+              numberOfLines={1}
+            >
+              {item.pillName || "—"}
+            </Text>
+          </View>
+          <View style={styles.left}>
+            <Text
+              style={[
+                styles.name,
+                !item.description && styles.placeholder,
+              ]}
+              numberOfLines={1}
+            >
+              {item.pillName || "—"}
+            </Text>
+          </View>
+          <View style={styles.right}>
+          <Text style={styles.amount}>{item.value}</Text>
+              {item.type === "input" ? (
+                <AntDesign name="arrowup" size={16} color={colors.green[400]} />
+              ) : (
+                <AntDesign name="arrowdown" size={16} color={colors.red[400]} />
+              )}
+          </View>
         </View>
-        <View style={styles.right}>
-        <Text style={styles.amount}>{item.value}</Text>
-            {item.type === "input" ? (
-              <AntDesign name="arrowup" size={16} color={colors.green[400]} />
-            ) : (
-              <AntDesign name="arrowdown" size={16} color={colors.red[400]} />
-            )}
-        </View>
-      </View>
     </View>
   );
 }
@@ -56,6 +64,11 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 10,
     paddingHorizontal: 12,
+  },
+  photo: { flexDirection: "row", 
+    alignItems: "center", 
+    gap: 6, 
+    flexShrink: 1 
   },
   left: { flexDirection: "row", 
     alignItems: "center", 

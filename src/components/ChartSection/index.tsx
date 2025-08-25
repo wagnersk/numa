@@ -3,7 +3,8 @@ import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { PieChart } from "react-native-gifted-charts";
 import { colors, fontFamily } from "@/theme";
 import { TargetProps } from "@/store/useAnalysisStore";
-  
+  import { Circle, G, Rect, Text as SvgText } from 'react-native-svg';
+
 interface Props {
   targets: TargetProps[];
   total: string;
@@ -13,11 +14,27 @@ interface Props {
 }
 
 export default function ChartSection({ targets, total, selectedPill, setSelectedPill, showPills = true }: Props) {
+
+
+
+  const radius = 100;
+  const lineLength = 30;
+  const tailLength = 8;
+
+
+    const totalValue = targets.reduce((sum, item) => sum + item.value, 0);
+ 
+
   return (
     <View>
       <View style={styles.chartWrapper}>
         <PieChart
-          data={targets}
+        /*   data={targets} */
+              data={targets.map(item => ({
+            ...item,
+            text:  item.value.toFixed(2),  // máximo 4 casas decimais
+            shiftTextY:10,
+          }))}
           donut
           radius={100}
           innerRadius={60}
@@ -26,13 +43,56 @@ export default function ChartSection({ targets, total, selectedPill, setSelected
           innerCircleBorderColor="white"
           strokeColor="white"
           strokeWidth={4}
-          showText
           textSize={14}
           textColor={colors.black}
-          showTextBackground
           textBackgroundColor={colors.gray[300]}
           textBackgroundRadius={12}
-          font={fontFamily.light}
+          showExternalLabels
+          labelsPosition="onBorder"
+          labelLineConfig={{
+                  length: 1,   // 👉 tamanho da linha externa
+                  tailLength: 8,      // sem dobra, reta até a ponta
+                  color: colors.gray[500],
+                  thickness:1,
+                  labelComponentWidth:20,
+                  labelComponentHeight:10,
+                  labelComponentMargin:4,
+                  avoidOverlappingOfLabels:false
+          }}
+           externalLabelComponent={(item, index) => (
+            <G>
+  {(() => {
+    const textLength = (item?.text?.length ?? 0);
+    const padding = 4; 
+    const textWidth = textLength * 6.8; 
+    const radius = textWidth / 2 + padding;  
+
+    return (
+      <>
+        <Circle
+          cx={textWidth / 2}
+          cy={-5}
+          r={Math.max(radius, 12)} // raio mínimo 12
+          fill="white"             // centro branco
+          stroke={item.color}      // borda na cor da fatia
+          strokeWidth={2}          // espessura da borda
+        />
+        <SvgText
+          x={textWidth / 2}
+          y={-1} // 👈 sobe 2px para centralizar visualmente
+          fontSize={14}
+          fontWeight="bold"
+          fontFamily="Arial"
+          textAnchor="middle"
+          alignmentBaseline="middle"
+        >
+          {item?.text}
+        </SvgText>
+      </>
+    );
+  })()}
+</G>
+          )}
           centerLabelComponent={() => (
             <View style={styles.centerLabel}>
               <Text style={styles.chartValue}>{total}</Text>

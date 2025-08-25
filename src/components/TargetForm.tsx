@@ -29,6 +29,7 @@ import { usePhotosDatabase } from "@/database/usePhotosDatabase";
 import { SafeAreaView } from "react-native-safe-area-context"; 
 import { addDays } from "@/utils/addDays";
 import { getLocalPhotoUri } from "@/utils/getLocalPhotoUri";
+import { currenciesArray } from "@/utils/currencyList";
 
 interface TargetFormProps {
   editting:boolean
@@ -77,13 +78,7 @@ export function TargetForm({
   const [ isStartPickerVisible, setStartPickerVisible ] = useState(false);
   const [ isEndPickerVisible, setEndPickerVisible ] = useState(false);
 
-  const currenciesArray = ["BRL", "USD", "EUR"];
-
-  // Este efeito garante que o estado temporário (cor/foto) seja limpo
-  // sempre que uma nova sessão de criação ou edição for iniciada.
-/*   useEffect(() => {
-    resetStore();
-  }, [editting, paramsId]); */
+ 
 
   useFocusEffect(
     useCallback(() => {
@@ -92,13 +87,8 @@ export function TargetForm({
           const fetchedData = await fetchTarget(paramsId, targetDatabase);
           if (fetchedData) {
             setTargetData(fetchedData);
-            // Não definimos a cor temporária aqui. A UI usará a cor de `targetData`
-            // como padrão. Se o usuário selecionar uma nova cor, ela será armazenada
-            // em `tempTarget` e terá precedência, resolvendo o bug de sobrescrita.
           }
         } else {
-           // Se não houver cor no estado temporário, significa que precisamos inicializar.
-           // Isso acontece na primeira carga após o reset no `useEffect`.
            const { color } = useTargetStore.getState().tempTarget;
            if (!color) {
             initializeNewTarget(targetDatabase);
@@ -109,8 +99,6 @@ export function TargetForm({
 
       return () => {
         setTargetData(initialTargetData);
-        // Não resetamos o store aqui, pois isso limpa a seleção de foto/cor
-        // ao navegar para as telas de seleção. O useEffect na montagem cuida do reset.
       };
     }, [editting, paramsId])
   );

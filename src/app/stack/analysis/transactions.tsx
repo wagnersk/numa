@@ -6,13 +6,12 @@ import { colors, fontFamily } from '@/theme';
 import { router } from 'expo-router';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import TransactionDetailedItem from '@/components/TransactionIDetailedtem';
-import { useTargetStore } from '@/store/useTargetStore';
 
 export default function TransactionsScreen() {
   const { transactions, targets, selectedPill } = useAnalysisStore();
-  const {  target } = useTargetStore();
+  
   const insets = useSafeAreaInsets();
-console.log(target)
+
   const filteredTransactions = useMemo(() => {
     if (selectedPill === 0) {
       return transactions;
@@ -26,17 +25,15 @@ console.log(target)
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-                 <View >
-                        <TouchableOpacity style={styles.backButton} onPress={router.back}>
-                            <AntDesign name="arrowleft" size={24} color={colors.black} />
-                        </TouchableOpacity>
-                    </View>
-
-
-        <Text style={styles.title}>Transações</Text>
+          <View>
+            <TouchableOpacity style={styles.backButton} onPress={router.back}>
+                <AntDesign name="arrowleft" size={24} color={colors.black} />
+            </TouchableOpacity>
+        </View>
+        
+      <Text style={ styles.title }>Transações</Text>
         <View style={{ width: 50 }} />
       </View>
-      
       <Text style={styles.subtitle}>Exibindo transações para: {selectedTargetName}</Text>
       <FlatList
         data={filteredTransactions}
