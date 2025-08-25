@@ -7,14 +7,12 @@
                     <Stack
                         screenOptions={{
                             headerShown:false,
-                            contentStyle:{ backgroundColor: colors.white
-                                
-                            }
+                         
                         }}
                     >
                         <Stack.Screen name='settings'  />
 
-                        <Stack.Screen name="analysis/transactions/[id]" />
+                        <Stack.Screen name="analysis/transactions" />
 
                         <Stack.Screen name="index/target-details/[id]" />
                         <Stack.Screen name="index/target-insert-amount/[id]" />

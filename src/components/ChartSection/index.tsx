@@ -2,16 +2,17 @@ import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { PieChart } from "react-native-gifted-charts";
 import { colors, fontFamily } from "@/theme";
-import { TargetProps } from "@/app/tabs/analysis";
- 
+import { TargetProps } from "@/store/useAnalysisStore";
+  
 interface Props {
   targets: TargetProps[];
   total: string;
   selectedPill: number;
   setSelectedPill: (index: number) => void;
+  showPills?: boolean;
 }
 
-export default function ChartSection({ targets, total, selectedPill, setSelectedPill }: Props) {
+export default function ChartSection({ targets, total, selectedPill, setSelectedPill, showPills = true }: Props) {
   return (
     <View>
       <View style={styles.chartWrapper}>
@@ -41,37 +42,39 @@ export default function ChartSection({ targets, total, selectedPill, setSelected
         />
       </View>
 
-      <View style={styles.legendRow}>
-        <TouchableOpacity
-          onPress={() => setSelectedPill(0)}
-          style={styles.legendButton}
-        >
-          <View style={[styles.legendColor, { backgroundColor: colors.gray[500] }]} />
-          <Text
-            style={[styles.legendText, selectedPill === 0 && styles.legendTextSelected]}
+      {showPills && (
+        <View style={styles.legendRow}>
+          <TouchableOpacity
+            onPress={() => setSelectedPill(0)}
+            style={styles.legendButton}
           >
-            Todos
-          </Text>
-        </TouchableOpacity>
-
-        {targets.map((item, index) => {
-          const selected = selectedPill === index + 1;
-          return (
-            <TouchableOpacity
-              key={index}
-              onPress={() => setSelectedPill(index + 1)}
-              style={styles.legendButton}
+            <View style={[styles.legendColor, { backgroundColor: colors.gray[500] }]} />
+            <Text
+              style={[styles.legendText, selectedPill === 0 && styles.legendTextSelected]}
             >
-              <View style={[styles.legendColor, { backgroundColor: item.color }]} />
-              <Text
-                style={[styles.legendText, selected && styles.legendTextSelected]}
+              Todos
+            </Text>
+          </TouchableOpacity>
+
+          {targets.map((item, index) => {
+            const selected = selectedPill === index + 1;
+            return (
+              <TouchableOpacity
+                key={index}
+                onPress={() => setSelectedPill(index + 1)}
+                style={styles.legendButton}
               >
-                {item.pillName || ""}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
+                <View style={[styles.legendColor, { backgroundColor: item.color }]} />
+                <Text
+                  style={[styles.legendText, selected && styles.legendTextSelected]}
+                >
+                  {item.pillName || ""}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      )}
     </View>
   );
 }

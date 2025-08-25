@@ -18,20 +18,4 @@ export default function Index(){
     return (
         <Login/>
     )
-}
-  
-      
-    /*     <Suspense fallback={<Loading />}>
-            <SQLiteProvider
-                databaseName="target.db"
-                onInit={migrate}
-                useSuspense
-                >
-                <Stack
-                screenOptions={{
-                    headerShown:false,
-                    contentStyle:{ backgroundColor: colors.white }
-                }}
-                />
-            </SQLiteProvider>
-        </Suspense> */
+} 

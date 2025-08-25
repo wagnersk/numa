@@ -22,9 +22,7 @@ export default function BlurViewTargetDetails({
         contrastColor
      }:Props
     ) {
-    function handleDeleteTarget() {
-        console.log("Delete target with ID:", id);
-    }
+ 
     function handleEditTarget() {
         console.log("Edit target with ID:", id);
         router.push(`/no-tabs/target/${id}`)

@@ -106,7 +106,8 @@ export default function TabsLayout(){
             >
                 <Tabs.Screen name='index' options={{ title:'Home'}}/>
                 <Tabs.Screen name='target' options={{title:'Metas'}}/>
-                <Tabs.Screen name='analysis' options={{title:''}}/>
+                <Tabs.Screen name='analysis' options={{title:'Análise'}}/>
+                
             </Tabs>
 
     )

@@ -1,20 +1,24 @@
 import React from "react";
 import { View, Text, TouchableOpacity, FlatList, StyleSheet } from "react-native";
 import { colors, fontFamily } from "@/theme";
-import TransactionItem from "../TransactionItem";
-import { TransactionProps } from "@/app/tabs/analysis";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { TransactionProps } from "@/store/useAnalysisStore";
 
 interface Props {
   transactions: TransactionProps[];
   onViewAll: () => void;
+  tabBarHeight: number; // New prop
+  renderItem: React.ComponentType<{ item: TransactionProps }>;
 }
 
-export default function TransactionList({ transactions, onViewAll }: Props) {
-  const insets = useSafeAreaInsets();
+export default function TransactionList({ 
+  transactions, 
+  onViewAll, 
+  tabBarHeight, 
+  renderItem: RenderItem 
+}: Props) {
   
   return (
-    <View>
+    <View style={[styles.container, { paddingBottom: tabBarHeight }]}>
       <View style={styles.header}>
         <Text style={styles.title}>Transações</Text>
         <TouchableOpacity onPress={onViewAll}>
@@ -24,14 +28,18 @@ export default function TransactionList({ transactions, onViewAll }: Props) {
       <FlatList
         data={transactions}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={[styles.listContent, {paddingBottom: insets.bottom + 96}]}
-        renderItem={({ item }) => <TransactionItem item={item} />}
+        contentContainerStyle={styles.listContent}// Use tabBarHeight
+        renderItem={({ item }) => <RenderItem item={item} />}
+        showsVerticalScrollIndicator={false}
       />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex:1
+  },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
