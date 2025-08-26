@@ -83,6 +83,42 @@ export function useTransactionsDatabase() {
       `
     );
 }
+ 
+async function listAllDataByTargetsId(target_ids: number[]) {
+  if (target_ids.length === 0) return [];
 
-  return { create, listByTargetId, remove, summary, listAll };
+  const placeholders = target_ids.map(() => "?").join(", ");
+  const query = `
+    SELECT 
+      transactions.id,
+      transactions.target_id,
+      transactions.amount,
+      transactions.observation,
+      transactions.created_at,
+      transactions.updated_at,
+
+      targets.name AS target_name,
+      targets.amount AS target_amount,
+      targets.currency AS target_currency,
+      targets.color AS target_color,
+      targets.start_date AS target_start_date,
+      targets.end_date AS target_end_date,
+
+      photos.file_name AS photo_file_name,
+      photos.color AS photo_color,
+      photos.blur_hash AS photo_blur_hash,
+      photos.direct_url AS photo_direct_url
+
+    FROM transactions
+    INNER JOIN targets ON transactions.target_id = targets.id
+    LEFT JOIN photos ON targets.id = photos.target_id
+    WHERE transactions.target_id IN (${placeholders})
+    ORDER BY datetime(transactions.created_at) DESC
+  `;
+
+  return database.getAllAsync<any>(query, target_ids);
+}
+ 
+
+  return { create, listByTargetId, remove, summary, listAll, listAllDataByTargetsId };
 }

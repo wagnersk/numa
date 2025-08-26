@@ -1,3 +1,4 @@
+import { CurrencyProps } from "@/utils/currencyList";
 import { useSQLiteContext } from "expo-sqlite";
 import { Timestamp } from "react-native-reanimated/lib/typescript/commonTypes";
 
@@ -141,6 +142,32 @@ export function useTargetDatabase(){
             ORDER BY percentage DESC
         `);
       }
+     function showAllByCurrency(currencyType:CurrencyProps) {
+        return database.getAllAsync<TargetResponse>(`
+            SELECT 
+                targets.id,
+                targets.name,
+                targets.amount,
+                targets.currency,
+                targets.color,
+                targets.start_date,
+                targets.end_date,
+                COALESCE(SUM(transactions.amount), 0) AS current,
+                COALESCE((SUM(transactions.amount) / targets.amount) * 100, 0) AS percentage,
+                targets.created_at,
+                targets.updated_at,
+                photos.file_name AS photo_file_name,
+                photos.color AS photo_color,
+                photos.blur_hash AS photo_blur_hash,
+                photos.direct_url AS photo_direct_url
+            FROM targets
+            LEFT JOIN transactions ON targets.id = transactions.target_id
+            LEFT JOIN photos ON targets.id = photos.target_id
+            WHERE targets.currency = '${currencyType}'
+            GROUP BY targets.id, targets.name, targets.amount, targets.currency, targets.color, targets.start_date, targets.end_date
+            ORDER BY percentage DESC
+        `);
+      }
 
 
        
@@ -180,6 +207,7 @@ export function useTargetDatabase(){
         listByPercentage,
         show,
         showAll,
+        showAllByCurrency,
         update,
         remove
      }

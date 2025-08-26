@@ -8,14 +8,13 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import BlurViewTargetDetails from "@/components/BlurViewTargetDetails";
 import { useCallback, useState, useRef } from "react";
 import { useTargetDatabase } from "@/database/useTargetDatabase";
-import { TartgetGridProps } from "@/components/TargetGrid";
 import { getLocalPhotoUri } from "@/utils/getLocalPhotoUri";
 import { getContrastColor } from "@/utils/getContrastColor";
-import { useAnalysisStore } from "@/store/useAnalysisStore";
+import { TargetAllDataProps, TargetByIdProps, useAnalysisStore } from "@/store/useAnalysisStore";
 
 export default function TargetDetail() {
   const params = useLocalSearchParams<{ id: string }>();
-  const [target, setTarget] = useState<TartgetGridProps | null>(null);
+  const [target, setTarget] = useState<TargetByIdProps | null>(null);
   const targetDatabase = useTargetDatabase();
 
     const { 

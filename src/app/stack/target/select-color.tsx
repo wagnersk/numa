@@ -5,14 +5,13 @@ import { Feather } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { colors } from "@/theme";
 import { useTargetStore } from "@/store/useTargetStore";
-import { colorsList } from "@/utils/colorList";
-import { TargetResponse, useTargetDatabase } from "@/database/useTargetDatabase";
+import { useTargetDatabase } from "@/database/useTargetDatabase";
 
 export default function SelectColorScreen() {
   const router = useRouter();
   const setSelectedPhoto = useTargetStore((state) => state.setTempTarget);
   const targetDatabase = useTargetDatabase();
-
+  const { getAvailableColors  } = useTargetStore();
   const [color, setColor] = useState<string | null>(null);
   const [filteredColorList, setFilteredColorList] = useState<string[]>([]);
 
@@ -23,21 +22,8 @@ export default function SelectColorScreen() {
     }
   };
 
-  async function fetchTargets(): Promise<TargetResponse[]> {
-    try {
-      return await targetDatabase.showAll();
-    } catch (error) {
-      Alert.alert("Erro", "Não foi possível carregar as metas.");
-      console.log(error);
-      return [];
-    }
-  }
-
   async function fetchData() {
-    const targetData = await fetchTargets();
-    const usedColors = targetData.map((item) => item.color)
-
-    const availableColors = colorsList.filter((c) => !usedColors.includes(c));
+    const availableColors = await getAvailableColors(targetDatabase);
     setFilteredColorList(availableColors);
   }
 

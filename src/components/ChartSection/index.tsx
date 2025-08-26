@@ -14,22 +14,10 @@ interface Props {
 }
 
 export default function ChartSection({ targets, total, selectedPill, setSelectedPill, showPills = true }: Props) {
-
-
-
-  const radius = 100;
-  const lineLength = 30;
-  const tailLength = 8;
-
-
-    const totalValue = targets.reduce((sum, item) => sum + item.value, 0);
- 
-
   return (
     <View>
       <View style={styles.chartWrapper}>
         <PieChart
-        /*   data={targets} */
               data={targets.map(item => ({
             ...item,
             text:  item.value.toFixed(2),  // máximo 4 casas decimais
@@ -61,37 +49,37 @@ export default function ChartSection({ targets, total, selectedPill, setSelected
           }}
            externalLabelComponent={(item, index) => (
             <G>
-  {(() => {
-    const textLength = (item?.text?.length ?? 0);
-    const padding = 4; 
-    const textWidth = textLength * 6.8; 
-    const radius = textWidth / 2 + padding;  
+              {(() => {
+                const textLength = (item?.text?.length ?? 0);
+                const padding = 4; 
+                const textWidth = textLength * 6.8; 
+                const radius = textWidth / 2 + padding;  
 
-    return (
-      <>
-        <Circle
-          cx={textWidth / 2}
-          cy={-5}
-          r={Math.max(radius, 12)} // raio mínimo 12
-          fill="white"             // centro branco
-          stroke={item.color}      // borda na cor da fatia
-          strokeWidth={2}          // espessura da borda
-        />
-        <SvgText
-          x={textWidth / 2}
-          y={-1} // 👈 sobe 2px para centralizar visualmente
-          fontSize={14}
-          fontWeight="bold"
-          fontFamily="Arial"
-          textAnchor="middle"
-          alignmentBaseline="middle"
-        >
-          {item?.text}
-        </SvgText>
-      </>
-    );
-  })()}
-</G>
+                return (
+                  <>
+                    <Circle
+                      cx={textWidth / 2}
+                      cy={-5}
+                      r={Math.max(radius, 12)} // raio mínimo 12
+                      fill="white"             // centro branco
+                      stroke={item.color}      // borda na cor da fatia
+                      strokeWidth={2}          // espessura da borda
+                    />
+                    <SvgText
+                      x={textWidth / 2}
+                      y={-3} // 👈 sobe 2px para centralizar visualmente
+                      fontSize={14}
+                      fontWeight="bold"
+                      fontFamily="Arial"
+                      textAnchor="middle"
+                      alignmentBaseline="middle"
+                    >
+                      {item?.text}
+                    </SvgText>
+                  </>
+                );
+              })()}
+            </G>
           )}
           centerLabelComponent={() => (
             <View style={styles.centerLabel}>

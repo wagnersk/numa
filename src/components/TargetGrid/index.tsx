@@ -4,33 +4,13 @@ import {  DimensionValue, View   } from "react-native"
 import { ToogleButton } from "./toogleButton"
 import { GridType1 } from "./GridType1"
 import { GridType2 } from "./GridType2"
-import { useState ,useEffect, use} from "react"
-import { SafeAreaView } from "react-native-safe-area-context"
+import { useState } from "react"
+import { TargetsData } from "@/store/useTargetStore"
 
-export type TartgetGridProps = {
-    id:number;
-    name:string;
-
-    target:string;
-    currency:string;
-    color:string;
-    
-    start_date:number;
-    end_date:number;
-
-    photo_file_name:string;
-    photo_color:string;
-    photo_blur_hash:string;
-    photo_direct_url:string;
-
-
-    current:number;
-    percentage:number;
-}
  
  
 type Props = {
-    data:TartgetGridProps[]
+    data:TargetsData[]
    onFocusChange?: (id: string | null) => void; // callback opcional
 
 }

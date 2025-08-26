@@ -6,7 +6,8 @@ import { useTargetDatabase } from "@/database/useTargetDatabase";
 import { useTransactionsDatabase } from "@/database/useTransactionsDatabase";
 import { usePhotosDatabase } from "@/database/usePhotosDatabase";
 import { getRandomUnusedColor } from "@/utils/getRandomColor";
-import { colors } from "@/theme";
+import { numberToCurrency } from "@/utils/numberToCurrency";
+import { colorsList } from "@/utils/colorList";
 
 // Type definitions
 export type TargetData = {
@@ -20,6 +21,51 @@ export type TargetData = {
   start_date: number;
   end_date: number;
 };
+
+export type TargetsData= {
+    id:number;
+    name:string;
+
+    target:string;
+    currency:string;
+    currencyType:string;
+    color:string;
+    
+    start_date:number;
+    end_date:number;
+
+    photo_file_name:string;
+    photo_color:string;
+    photo_blur_hash:string;
+    photo_direct_url:string;
+
+
+    current:number;
+    percentage:number;
+}
+/* fetchTargetsByPercentage */
+export type TargetByPercentageProps = {
+    id:number;
+    name:string;
+
+    target:string;
+    currency:string;
+    color:string;
+    
+    start_date:number;
+    end_date:number;
+
+    photo_file_name:string;
+    photo_color:string;
+    photo_blur_hash:string;
+    photo_direct_url:string;
+
+
+    current:number;
+    percentage:number;
+}
+ 
+ 
 
 export interface TempTargetData {
   photo: UnsplashPhoto | null;
@@ -36,6 +82,11 @@ interface TargetStoreState {
   initializeNewTarget: (db: ReturnType<typeof useTargetDatabase>) => Promise<void>;
 
   fetchTarget: (id: string, db: ReturnType<typeof useTargetDatabase>) => Promise<TargetData | null>;
+  fetchFormattedTarget: (id: string, db: ReturnType<typeof useTargetDatabase>) => Promise<TargetsData | null>;
+  fetchTargetsByPercentage: (db: ReturnType<typeof useTargetDatabase>) => Promise<TargetByPercentageProps[]>; 
+
+  getAvailableColors: (db: ReturnType<typeof useTargetDatabase>) => Promise<string[]>;
+
   handleSubmit: (
     databases: {
       targetDatabase: ReturnType<typeof useTargetDatabase>;
@@ -88,31 +139,105 @@ export const useTargetStore = create<TargetStoreState>((set, get) => ({
   },
 
   // Async Actions
-  fetchTarget: async (id, db) => {
-    set({ isLoading: true });
-    try {
-      const response = await db.show(id);
-      if (!response) return null;
 
-      return {
-        id: Number(response.id),
-        name: response.name,
-        currency: response.currency,
-        current: response.current,
-        target: response.amount,
-        start_date: response.start_date,
-        end_date: response.end_date,
-        color: response.color,
-        photo_file_name: response.photo_file_name,
-      };
+    fetchTargetsByPercentage: async (db) => {
+      try {
+        const response = await db.listByPercentage();
+        const mappedTargets: TargetsData[] = response.map((item) => ({
+          id: Number(item.id),
+          target: numberToCurrency(item.amount),
+          currency: numberToCurrency(item.current),
+          currencyType: item.currency,
+          color: item.color,
+          end_date: item.end_date,
+          name: item.name,
+          percentage: Number(item.percentage.toFixed(2)),
+          current: item.current,
+          start_date: item.start_date,
+          photo_file_name: item.photo_file_name,
+          photo_color: item.photo_color,
+          photo_blur_hash: item.photo_blur_hash,
+          photo_direct_url: item.photo_direct_url,
+        }));
+
+      return mappedTargets
+        
+      } catch (error) {
+        Alert.alert("Erro", "Não foi possível carregar as metas.");
+        console.log(error);
+      } finally {
+      }
+    },
+
+    fetchTarget: async (id, db) => {
+      set({ isLoading: true });
+      try {
+        const response = await db.show(id);
+        if (!response) return null;
+
+        return {
+          id: Number(response.id),
+          name: response.name,
+          currency: response.currency,
+          current: response.current,
+          target: response.amount,
+          start_date: response.start_date,
+          end_date: response.end_date,
+          color: response.color,
+          photo_file_name: response.photo_file_name,
+          
+        };
+      } catch (error) {
+        Alert.alert("Erro", "Não foi possível carregar a meta.");
+        console.log(error);
+        return null;
+      } finally {
+        set({ isLoading: false });
+      }
+    },
+    fetchFormattedTarget: async (id, db) => {
+      set({ isLoading: true });
+      try {
+        const response = await db.show(id);
+        if (!response) return null;
+
+        return {
+          id: Number(response.id),
+          target: numberToCurrency(response.amount),
+          currency: numberToCurrency(response.current),
+          currencyType: response.currency,
+          color: response.color,
+          end_date: response.end_date,
+          name: response.name,
+          percentage: Number(response.percentage.toFixed(2)),
+          current: response.current,
+          start_date: response.start_date,
+          photo_color: response.photo_color,
+          photo_blur_hash: response.photo_blur_hash,
+          photo_direct_url: response.photo_direct_url,
+          photo_file_name: response.photo_file_name,
+          
+        };
+      } catch (error) {
+        Alert.alert("Erro", "Não foi possível carregar a meta.");
+        console.log(error);
+        return null;
+      } finally {
+        set({ isLoading: false });
+      }
+    },
+    getAvailableColors: async (db: ReturnType<typeof useTargetDatabase>) => {
+    try {
+      const response = await db.showAll();
+      const usedColors = response.map((item) => item.color);
+      const availableColors = colorsList.filter((c) => !usedColors.includes(c));
+      return availableColors;
     } catch (error) {
-      Alert.alert("Erro", "Não foi possível carregar a meta.");
+      Alert.alert("Erro", "Não foi possível carregar as cores.");
       console.log(error);
-      return null;
-    } finally {
-      set({ isLoading: false });
+      return [];
     }
-  },
+},
 
   handleSubmit: async (databases, editting, targetData) => {
     const { tempTarget } = get();

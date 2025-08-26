@@ -2,26 +2,25 @@ import { View, Text, TouchableOpacity, TextInput, StyleSheet, Alert } from "reac
 import { BlurView } from 'expo-blur';
 import Feather from '@expo/vector-icons/Feather';
 import { useState } from "react";
-import { TartgetGridProps } from "../TargetGrid";
 import { CurrencyInput } from "../CurrencyInput";
 import { TransactionTypes } from "@/utils/TransactionTypes";
 import { colors, fontFamily } from "@/theme";
 import { useTransactionsDatabase } from "@/database/useTransactionsDatabase";
 import { router } from "expo-router";
+import { TargetsData } from "@/store/useTargetStore";
 
 export type Props = {
   id: string
-  data: TartgetGridProps
-  contrastColor: 'black' | 'white'
+  data: TargetsData
+  contrastColor: 'black' | 'white',
 }
 
 export default function BlurViewTargetInsertAmount({
   id,
   data,
-  contrastColor
+  contrastColor,
 }: Props) {
   const maxChars = 50
-  const currency = 'R$'
   const { create } = useTransactionsDatabase()
 
   const [form, setForm] = useState({
@@ -70,32 +69,6 @@ export default function BlurViewTargetInsertAmount({
     Alert.alert("Erro", "Não foi possível salvar a transação.");
   }
 }
- /*  async function handleSave() {
-    if (form.value <= 0) {
-      Alert.alert("Atenção", "Informe um valor maior que zero.");
-      return;
-    }
-
-    try {
-      await create({
-        target_id: Number(id),
-        amount: form.type === TransactionTypes.Input ? form.value : -form.value,
-        observation: form.reason || null,
-      });
-
-      setForm({ type: TransactionTypes.Input, reason: "", value: 0 }); // reset form
-
-      Alert.alert("Sucesso","Transação salva com sucesso!",[
-        {
-          text:'Ok',
-          onPress: router.back
-        }
-      ])
-    } catch (error) {
-      console.error(error);1000
-      Alert.alert("Erro", "Não foi possível salvar a transação.");
-    }
-  } */
 
   function handleChangeValue(current: number) {
     setForm(prev => ({ ...prev, value: current }))
@@ -137,7 +110,11 @@ export default function BlurViewTargetInsertAmount({
 
         <View style={styles.amountWrapper}>
           <CurrencyInput
-            prefix={currency}
+            prefix={ data.currencyType === "BRL"
+                    ? "R$"
+                    : data.currencyType === "USD"
+                    ? "$"
+                    : "€"}
             value={form.value}
             onChangeValue={handleChangeValue}
             fontSize={20}

@@ -1,1 +1,3 @@
-    export const currenciesArray = ["BRL", "USD", "EUR"];
+    export type CurrencyProps = "BRL" | "USD" | "EUR";
+    
+    export const currenciesArray:CurrencyProps[] = ["BRL", "USD", "EUR"];

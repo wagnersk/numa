@@ -5,14 +5,14 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import { styles } from "./styles";
 import { colors, fontFamily } from "@/theme";
 import { AnimatedCircularProgress } from "react-native-circular-progress";
-import { TartgetGridProps } from "../TargetGrid";
 import { formatTimestampDDMMYYYY } from "@/utils/formatTimestampDDMMYYYY";
 import { router } from "expo-router";
+import { TargetByIdProps } from "@/store/useAnalysisStore";
 
 
 export type Props = {
     id: string
-    data:TartgetGridProps
+    data:TargetByIdProps
     contrastColor:'black' | 'white'
 }
  

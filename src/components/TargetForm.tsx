@@ -44,6 +44,12 @@ export function TargetForm({
   onEditPhoto,
   paramsId,
 }: TargetFormProps) {
+  const currencyDetails = {
+    BRL: { symbol: "R$", name: "Real" },
+    USD: { symbol: "$", name: "Dólar" },
+    EUR: { symbol: "€", name: "Euro" },
+  };
+
   const router = useRouter();
   const {
     isLoading,
@@ -207,7 +213,7 @@ export function TargetForm({
                         targetData.currency === curr && styles.currencyTextSelected,
                       ]}
                     >
-                      {curr}
+                      {`${curr} (${currencyDetails[curr].symbol})`}
                     </Text>
                   </TouchableOpacity>
                 ))}
@@ -436,13 +442,16 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 20,
     borderRadius: 50,
-    width: "30%",
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
     height: 40,
+    borderWidth: 1,
+    borderColor: colors.gray[300],
   },
   currencyButtonSelected: {
     backgroundColor: colors.black,
+    borderColor: colors.black,
   },
   currencyText: {
     fontFamily: fontFamily.regular,

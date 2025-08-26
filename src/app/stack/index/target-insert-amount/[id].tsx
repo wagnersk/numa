@@ -12,43 +12,22 @@ import { TartgetGridProps } from "@/components/TargetGrid";
 import { numberToCurrency } from "@/utils/numberToCurrency";
 import { getLocalPhotoUri } from "@/utils/getLocalPhotoUri";
 import { getContrastColor } from "@/utils/getContrastColor";
+import { useTargetStore } from "@/store/useTargetStore";
 
 export default function TargetInsertAmount() {
   const params = useLocalSearchParams<{ id: string }>();
   const [target, setTarget] = useState<TartgetGridProps | null>(null);
   const targetDatabase = useTargetDatabase();
+  const { fetchFormattedTarget  } = useTargetStore();
 
   // Animated opacity do Blurhash
   const blurOpacity = useRef(new Animated.Value(1)).current;
-
-  async function fetchTarget(): Promise<TartgetGridProps | undefined> {
-    try {
-      const response = await targetDatabase.show(params.id);
-
-      return {
-        id: Number(response.id),
-        target: numberToCurrency(response.amount),
-        currency: numberToCurrency(response.current),
-        color: response.color,
-        end_date: response.end_date,
-        name: response.name,
-        percentage: Number(response.percentage.toFixed(2)),
-        current: response.current,
-        start_date: response.start_date,
-        photo_color: response.photo_color,
-        photo_blur_hash: response.photo_blur_hash,
-        photo_direct_url: response.photo_direct_url,
-        photo_file_name: response.photo_file_name,
-      };
-    } catch (error) {
-      Alert.alert("Erro", "Não foi possível carregar as metas.");
-      console.log(error);
-    }
-  }
+ 
 
   async function fetchData() {
     setTarget(null);
-    const targetData = await fetchTarget();
+    const targetData = await fetchFormattedTarget(params.id, targetDatabase);
+    //const targetData = await fetchTarget();
     if (targetData) setTarget(targetData);
   }
 
@@ -99,12 +78,12 @@ export default function TargetInsertAmount() {
         </TouchableOpacity>
       </BlurView>
 
-      
 
       <BlurViewTargetInsertAmount
        contrastColor={contrastColor}
        id={params.id}
        data={target}  
+
        />
     </ImageBackground>
   );

@@ -1,45 +1,63 @@
-import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import React, { useState } from "react";
+import { View, Text, StyleSheet, Image } from "react-native";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { colors, fontFamily } from "@/theme";
-import { TransactionProps } from "@/store/useAnalysisStore";
+import { TransactionAllDataProps } from "@/store/useAnalysisStore";
+import { Blurhash } from "react-native-blurhash";
 
-export default function TransactionDetailedItem({ item }: { item: TransactionProps }) {
+export default function TransactionDetailedItem({ item }: { item: TransactionAllDataProps }) {
+  const [loaded, setLoaded] = useState(false);
+
   return (
     <View style={styles.row}>
-      <View style={[styles.colorBar, { backgroundColor: item.color }]} />
-        <View style={styles.content}>
-          <View style={styles.photo}>
-            <Text
-              style={[
-                styles.name,
-                !item.description && styles.placeholder,
-              ]}
-              numberOfLines={1}
-            >
-              {item.pillName || "—"}
-            </Text>
+      {/* Foto com borda da cor da foto */}
+      <View style={styles.leftSection}>
+        {item.photo?.directUrl ? (
+          <View style={[styles.photoWrapper, { borderColor: item.photo.color || colors.gray[300] }]}>
+            {!loaded && item.photo?.blurHash && (
+              <Blurhash style={styles.photo} blurhash={item.photo.blurHash} />
+            )}
+            <Image
+              source={{ uri: item.photo.directUrl }}
+              style={styles.photo}
+              onLoadEnd={() => setLoaded(true)}
+            />
           </View>
-          <View style={styles.left}>
-            <Text
-              style={[
-                styles.name,
-                !item.description && styles.placeholder,
-              ]}
-              numberOfLines={1}
-            >
-              {item.pillName || "—"}
-            </Text>
-          </View>
-          <View style={styles.right}>
+        ) : (
+          <View
+            style={[
+              styles.photoPlaceholder,
+              { borderColor: item.photo?.color || colors.gray[300] },
+            ]}
+          />
+        )}
+      </View>
+
+      {/* Conteúdo central */}
+      <View style={styles.centerSection}>
+        <Text style={[styles.targetName, { color: item.color }]} numberOfLines={1}>
+          {item.pillName || "—"}
+        </Text>
+
+        {item.description ? (
+          <Text style={styles.description} numberOfLines={1}>
+            {item.description}
+          </Text>
+        ) : null}
+      </View>
+
+      {/* Valor + data + seta */}
+      <View style={styles.rightSection}>
+        <View style={styles.amountRow}>
           <Text style={styles.amount}>{item.value}</Text>
-              {item.type === "input" ? (
-                <AntDesign name="arrowup" size={16} color={colors.green[400]} />
-              ) : (
-                <AntDesign name="arrowdown" size={16} color={colors.red[400]} />
-              )}
-          </View>
+          {item.type === "input" ? (
+            <AntDesign name="arrowup" size={16} color={colors.green[400]} />
+          ) : (
+            <AntDesign name="arrowdown" size={16} color={colors.red[400]} />
+          )}
         </View>
+        <Text style={styles.date}>{item.date}</Text>
+      </View>
     </View>
   );
 }
@@ -48,54 +66,73 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 6,
-    borderRadius: 6,
+    marginBottom: 8,
+    borderRadius: 8,
     backgroundColor: colors.white,
-    overflow: "hidden",
-  },
-  colorBar: {
-    width: 6, 
-    height: "100%"
-  },
-  content: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    flex: 1,
     paddingVertical: 10,
     paddingHorizontal: 12,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 1,
   },
-  photo: { flexDirection: "row", 
-    alignItems: "center", 
-    gap: 6, 
-    flexShrink: 1 
+  leftSection: {
+    marginRight: 10,
   },
-  left: { flexDirection: "row", 
-    alignItems: "center", 
-    gap: 6, 
-    flexShrink: 1 
+  photoWrapper: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    overflow: "hidden",
+    borderWidth: 1,
   },
-  right: { 
-    flexDirection: "row", 
-    alignItems: "center", 
-    gap: 6, 
-    flexShrink: 1 
+  photo: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 32,
   },
-  name: {
-    fontFamily: fontFamily.regular,
+  photoPlaceholder: {
+    width: 40,
+    height: 40,
+    borderRadius: 8,
+    borderWidth: 2,
+    backgroundColor: colors.gray[200],
+  },
+  centerSection: {
+    flex: 1,
+    justifyContent: "center",
+    paddingRight: 8,
+  },
+  targetName: {
+    fontFamily: fontFamily.semiBold,
     fontSize: 14,
-    color: colors.black,
-    flexShrink: 1,
   },
-  placeholder: { 
-    color: colors.gray[500], 
-    fontStyle: "italic" 
+  description: {
+    fontFamily: fontFamily.regular,
+    fontSize: 12,
+    color: colors.gray[600],
+    marginTop: 2,
+  },
+  rightSection: {
+    flexDirection: "column",
+    alignItems: "flex-end",
+    minWidth: 100,
+  },
+  amountRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
   },
   amount: {
     fontFamily: fontFamily.bold,
     fontSize: 14,
     color: colors.black,
-    minWidth: 80,
     textAlign: "right",
+  },
+  date: {
+    fontFamily: fontFamily.regular,
+    fontSize: 11,
+    color: colors.gray[700],
+    marginTop: 2,
   },
 });
