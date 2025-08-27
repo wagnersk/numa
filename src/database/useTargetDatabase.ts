@@ -1,8 +1,8 @@
 import { CurrencyProps } from "@/utils/currencyList";
 import { useSQLiteContext } from "expo-sqlite";
-import { Timestamp } from "react-native-reanimated/lib/typescript/commonTypes";
 
 export type TargetCreate = {
+    user_id: number;
     name:string;
     amount:number;
     currency:string;
@@ -49,11 +49,12 @@ export type TargetResponse = {
 export function useTargetDatabase(){
     const database = useSQLiteContext()
 
-    async function create(data:TargetCreate) {
+    async function create(data: TargetCreate) {
         const statement = await database.prepareAsync(
-            "INSERT INTO targets (name, amount, currency, color, start_date, end_date) values ($name, $amount, $currency, $color, $start_date, $end_date)"
+            "INSERT INTO targets (user_id, name, amount, currency, color, start_date, end_date) values ($user_id, $name, $amount, $currency, $color, $start_date, $end_date)"
         )
              const result = await statement.executeAsync({
+                $user_id: data.user_id,
                 $name: data.name,
                 $amount: data.amount,
                 $currency: data.currency,
@@ -67,7 +68,7 @@ export function useTargetDatabase(){
             
         }
   
-      function listByPercentage(){
+      function listByPercentage(user_id: number){
         return database.getAllAsync<TargetResponse>(`
             SELECT 
                 targets.id,
@@ -88,11 +89,12 @@ export function useTargetDatabase(){
             FROM targets
             LEFT JOIN transactions ON targets.id = transactions.target_id
             LEFT JOIN photos ON targets.id = photos.target_id
+            WHERE targets.user_id = ?
             GROUP BY targets.id, targets.name, targets.amount, targets.currency, targets.color, targets.start_date, targets.end_date
             ORDER BY percentage DESC
-            `)
+            `, [user_id])
     }
-      function show(id:string){
+      function show(id: string, user_id: number){
         return database.getFirstAsync<TargetResponse>(`
             SELECT 
                 targets.id,
@@ -113,11 +115,11 @@ export function useTargetDatabase(){
             FROM targets
             LEFT JOIN transactions ON targets.id = transactions.target_id
             LEFT JOIN photos ON targets.id = photos.target_id
-            WHERE targets.id = ${id}
-            `)
+            WHERE targets.id = ? AND targets.user_id = ?
+            `, [id, user_id])
      }
      
-     function showAll() {
+     function showAll(user_id: number) {
         return database.getAllAsync<TargetResponse>(`
             SELECT 
                 targets.id,
@@ -138,11 +140,12 @@ export function useTargetDatabase(){
             FROM targets
             LEFT JOIN transactions ON targets.id = transactions.target_id
             LEFT JOIN photos ON targets.id = photos.target_id
+            WHERE targets.user_id = ?
             GROUP BY targets.id, targets.name, targets.amount, targets.currency, targets.color, targets.start_date, targets.end_date
             ORDER BY percentage DESC
-        `);
+        `, [user_id]);
       }
-     function showAllByCurrency(currencyType:CurrencyProps) {
+     function showAllByCurrency(currencyType: CurrencyProps, user_id: number) {
         return database.getAllAsync<TargetResponse>(`
             SELECT 
                 targets.id,
@@ -163,15 +166,15 @@ export function useTargetDatabase(){
             FROM targets
             LEFT JOIN transactions ON targets.id = transactions.target_id
             LEFT JOIN photos ON targets.id = photos.target_id
-            WHERE targets.currency = '${currencyType}'
+            WHERE targets.currency = ? AND targets.user_id = ?
             GROUP BY targets.id, targets.name, targets.amount, targets.currency, targets.color, targets.start_date, targets.end_date
             ORDER BY percentage DESC
-        `);
+        `, [currencyType, user_id]);
       }
 
 
        
-        async function update(data: TargetUpdate) {
+        async function update(data: TargetUpdate, user_id: number) {
           const statement = await database.prepareAsync(`
             UPDATE targets SET
               name = COALESCE($name, name),
@@ -180,11 +183,12 @@ export function useTargetDatabase(){
               color = COALESCE($color, color),
               end_date = COALESCE($end_date, end_date),
               updated_at = current_timestamp
-            WHERE id = $id
+            WHERE id = $id AND user_id = $user_id
           `);
 
           await statement.executeAsync({
             $id: data.id,
+            $user_id: user_id,
             $name: data.name,
             $amount: data.amount,
             $currency: data.currency,
@@ -195,8 +199,8 @@ export function useTargetDatabase(){
           await statement.finalizeAsync();
         }
 
-        async function remove(id: number) {
-          await database.runAsync(`DELETE FROM targets WHERE id = ?`, [id]);
+        async function remove(id: number, user_id: number) {
+          await database.runAsync(`DELETE FROM targets WHERE id = ? AND user_id = ?`, [id, user_id]);
         }
 
         

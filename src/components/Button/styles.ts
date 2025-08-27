@@ -9,6 +9,7 @@ export const styles = StyleSheet.create({
         borderRadius: 50,
         alignItems: "center",
         marginTop: 20,
+      paddingHorizontal: 16,
     },
     title:{
        color: colors.black,

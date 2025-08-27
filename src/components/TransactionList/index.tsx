@@ -31,6 +31,8 @@ export default function TransactionList({
         contentContainerStyle={styles.listContent}// Use tabBarHeight
         renderItem={({ item }) => <RenderItem item={item} />}
         showsVerticalScrollIndicator={false}
+       ListEmptyComponent={<Text style={styles.emptyText}>Nenhuma transação encontrada.</Text>}
+        
       />
     </View>
   );
@@ -60,6 +62,12 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 8,
     width: "100%",
-
   },
+    emptyText: {
+    textAlign: 'center',
+    marginTop: 48,
+    fontSize: 16,
+    fontFamily: fontFamily.regular,
+    color: colors.gray[500],
+  }
 });

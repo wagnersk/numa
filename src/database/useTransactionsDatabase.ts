@@ -2,6 +2,7 @@
 import { useSQLiteContext } from "expo-sqlite";
 
 export type TransactionCreate = {
+  user_id: number;
   target_id: number;
   amount: number;
   observation?: string | null;
@@ -32,11 +33,12 @@ export function useTransactionsDatabase() {
 
   async function create(data: TransactionCreate) {
     const statement = await database.prepareAsync(
-      `INSERT INTO transactions (target_id, amount, observation)
-       VALUES ($target_id, $amount, $observation)`
+      `INSERT INTO transactions (user_id, target_id, amount, observation)
+       VALUES ($user_id, $target_id, $amount, $observation)`
     );
 
     await statement.executeAsync({
+      $user_id: data.user_id,
       $target_id: data.target_id,
       $amount: data.amount,
       $observation: data.observation ?? null,
@@ -45,46 +47,48 @@ export function useTransactionsDatabase() {
     await statement.finalizeAsync();
   }
 
-  async function remove(id: number) {
-    await database.runAsync(`DELETE FROM transactions WHERE id = ?`, [id]);
+  async function remove(id: number, user_id: number) {
+    await database.runAsync(`DELETE FROM transactions WHERE id = ? AND user_id = ?`, [id, user_id]);
   }
 
-  async function listByTargetId(id: number) {
+  async function listByTargetId(id: number, user_id: number) {
     return database.getAllAsync<TransactionResponse>(
       `
       SELECT 
         id, target_id, amount, observation, created_at, updated_at
       FROM transactions
-      WHERE target_id = ?
+      WHERE target_id = ? AND user_id = ?
       ORDER BY created_at DESC
       `,
-      [id]
+      [id, user_id]
     );
   }
 
-  async function summary() {
+  async function summary(user_id: number) {
     return database.getFirstAsync<Summary>(
       `
       SELECT
         COALESCE(SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END), 0) AS input,
         COALESCE(SUM(CASE WHEN amount < 0 THEN amount ELSE 0 END), 0) AS output
       FROM transactions
-      `
+      WHERE user_id = ?
+      `, [user_id]
     );
   }
   
-  async function listAll() {
+  async function listAll(user_id: number) {
     return database.getAllAsync<TransactionResponse>(
       `
       SELECT 
         id, target_id, amount, observation, created_at, updated_at
       FROM transactions
+      WHERE user_id = ?
       ORDER BY datetime(created_at) DESC
-      `
+      `, [user_id]
     );
 }
  
-async function listAllDataByTargetsId(target_ids: number[]) {
+async function listAllDataByTargetsId(target_ids: number[], user_id: number) {
   if (target_ids.length === 0) return [];
 
   const placeholders = target_ids.map(() => "?").join(", ");
@@ -112,11 +116,11 @@ async function listAllDataByTargetsId(target_ids: number[]) {
     FROM transactions
     INNER JOIN targets ON transactions.target_id = targets.id
     LEFT JOIN photos ON targets.id = photos.target_id
-    WHERE transactions.target_id IN (${placeholders})
+    WHERE transactions.target_id IN (${placeholders}) AND transactions.user_id = ?
     ORDER BY datetime(transactions.created_at) DESC
   `;
 
-  return database.getAllAsync<any>(query, target_ids);
+  return database.getAllAsync<any>(query, [...target_ids, user_id]);
 }
  
 

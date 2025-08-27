@@ -1,13 +1,15 @@
-import { View, Text, TouchableOpacity, TextInput, StyleSheet, Alert } from "react-native";
+import { View, Text, TouchableOpacity, TextInput, StyleSheet, Alert, ActivityIndicator } from "react-native";
 import { BlurView } from 'expo-blur';
 import Feather from '@expo/vector-icons/Feather';
 import { useState } from "react";
 import { CurrencyInput } from "../CurrencyInput";
 import { TransactionTypes } from "@/utils/TransactionTypes";
 import { colors, fontFamily } from "@/theme";
-import { useTransactionsDatabase } from "@/database/useTransactionsDatabase";
+import { useTransactionsDatabase } from "@/database/useTransactionsDatabase"; 
 import { router } from "expo-router";
-import { TargetsData } from "@/store/useTargetStore";
+import { useTargetStore, TargetsData } from "@/store/useTargetStore";
+import { useTargetDatabase } from "@/database/useTargetDatabase";
+import { useTranslations } from "@/libs/i18n";
 
 export type Props = {
   id: string
@@ -21,7 +23,10 @@ export default function BlurViewTargetInsertAmount({
   contrastColor,
 }: Props) {
   const maxChars = 50
-  const { create } = useTransactionsDatabase()
+  const transactionsDatabase = useTransactionsDatabase()
+  const targetDatabase = useTargetDatabase()
+  const { saveTransaction, isLoading } = useTargetStore()
+  const t = useTranslations();
 
   const [form, setForm] = useState({
     type: TransactionTypes.Input,
@@ -35,40 +40,15 @@ export default function BlurViewTargetInsertAmount({
   }
 
   async function handleSave() {
-  // Se for retirada, verifica se o valor não vai ficar negativo
-  if (form.type === TransactionTypes.Output && form.value > data.current) {
-    Alert.alert(
-      "Atenção",
-      `Você não pode retirar mais do que o saldo atual (${data.current}).`
+    await saveTransaction(
+      Number(id),
+      form.value,
+      form.type === TransactionTypes.Input ? 'deposit' : 'withdraw',
+      form.reason || null,
+      { targetDatabase, transactionsDatabase }
     );
-    return;
-  }
-
-  if (form.value <= 0) {
-    Alert.alert("Atenção", "Informe um valor maior que zero.");
-    return;
-  }
-
-  try {
-    await create({
-      target_id: Number(id),
-      amount: form.type === TransactionTypes.Input ? form.value : -form.value,
-      observation: form.reason || null,
-    });
-
     setForm({ type: TransactionTypes.Input, reason: "", value: 0 }); // reset form
-
-    Alert.alert("Sucesso","Transação salva com sucesso!",[
-      {
-        text:'Ok',
-        onPress: router.back
-      }
-    ])
-  } catch (error) {
-    console.error(error);
-    Alert.alert("Erro", "Não foi possível salvar a transação.");
   }
-}
 
   function handleChangeValue(current: number) {
     setForm(prev => ({ ...prev, value: current }))
@@ -76,18 +56,15 @@ export default function BlurViewTargetInsertAmount({
 
   const actionLabel =
     form.type === TransactionTypes.Input
-      ? "Quanto você quer guardar?"
-      : "Quanto você quer retirar?";
+      ? t.insertAmount.saveQuestion
+      : t.insertAmount.withdrawQuestion;
 
   return (
     <View style={styles.container}>
       <BlurView intensity={100} tint="light" style={styles.blurContent}>
         <View style={styles.header}>
           <Text style={styles.goal}>{data.name}</Text>
-          <Text style={styles.motivation}>
-            Cada valor guardado te aproxima da sua meta.  
-            Escreva um motivo para se manter firme!
-          </Text>
+          <Text style={styles.motivation}>{t.insertAmount.motivation}</Text>
         </View>
 
         <View style={styles.actions}>
@@ -96,7 +73,7 @@ export default function BlurViewTargetInsertAmount({
             onPress={() => handleEditTarget(TransactionTypes.Input)}
           >
             <Feather name="arrow-up" size={22} color="black" />
-            <Text style={styles.buttonText}>Guardar</Text>
+            <Text style={styles.buttonText}>{t.insertAmount.saveAction}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -104,7 +81,7 @@ export default function BlurViewTargetInsertAmount({
             onPress={() => handleEditTarget(TransactionTypes.Output)}
           >
             <Feather name="arrow-down" size={22} color="black" />
-            <Text style={styles.buttonText}>Resgatar</Text>
+            <Text style={styles.buttonText}>{t.insertAmount.withdrawAction}</Text>
           </TouchableOpacity>
         </View>
 
@@ -126,13 +103,13 @@ export default function BlurViewTargetInsertAmount({
         </View>
 
         <View style={styles.textAreaWrapper}>
-          <Text style={styles.amountLabel}>Motivo (opcional):</Text>
+          <Text style={styles.amountLabel}>{t.insertAmount.reason}</Text>
           <TextInput
             style={styles.textArea}
             placeholder={
               form.type === TransactionTypes.Input 
-                ? "Ex: Sobrou do salário ou cortei gastos..." 
-                : "Ex: Emergência, contas do mês..."
+                ? t.insertAmount.reasonSavePlaceholder
+                : t.insertAmount.reasonWithdrawPlaceholder
             }            
             placeholderTextColor={colors.gray[900]}
             value={form.reason}
@@ -148,8 +125,13 @@ export default function BlurViewTargetInsertAmount({
         <TouchableOpacity 
           style={styles.saveButton} 
           onPress={handleSave}
+          disabled={isLoading}
         >
-          <Text style={styles.saveButtonText}>Salvar</Text>
+          {isLoading ? (
+            <ActivityIndicator color={colors.white} />
+          ) : (
+            <Text style={styles.saveButtonText}>{t.common.save}</Text>
+          )}
         </TouchableOpacity>
       </BlurView>
     </View>

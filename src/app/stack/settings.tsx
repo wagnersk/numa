@@ -1,29 +1,62 @@
 import { router } from "expo-router";
-import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import { colors } from "@/theme/colors";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Feather from "@expo/vector-icons/Feather";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { fontFamily } from "@/theme";
+import { useUserStore } from "@/store/useUserStore";
+import { Language, useUserDatabase } from "@/database/useUserDatabase";
+import { useSessionDatabase } from "@/database/useSessionDatabase";
+import { Button } from "@/components/Button";
+import { useTranslations } from "@/libs/i18n";
 
 export default function Settings() {
-    const [language, setLanguage] = useState<'pt-br' | 'en' | 'es'>('pt-br');
+    const { user, logout, updateProfile, isLoading } = useUserStore();
+    const userDatabase = useUserDatabase();
+    const sessionDatabase = useSessionDatabase();
+
+    const [language, setLanguage] = useState<Language>('pt-br');
     const [name, setName] = useState('');
+    const t = useTranslations(language);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    useEffect(() => {
+        if (user) {
+            setName(user.name);
+            setEmail(user.email);
+            setLanguage(user.language);
+        }
+    }, [user]);
 
     const languages = [
-        { code: 'pt-br', label: 'Português' },
-        { code: 'en', label: 'English' },
-        { code: 'es', label: 'Español' },
+        { code: 'pt-br', label: t.settings.portuguese },
+        { code: 'en', label: t.settings.english },
+        { code: 'es', label: t.settings.spanish },
     ];
 
-    function handleSave(){
-        // Aqui você pode implementar a lógica para salvar as configurações do usuário
-        console.log('Configurações salvas:', { language, name, email, password });
+    function handleSave() {
+        if (!user) return;
+        const updates: { name?: string; email?: string; password?: string; language?: Language } = {};
+        if (name.trim() && name.trim() !== user.name) updates.name = name.trim();
+        if (email.trim() && email.trim() !== user.email) updates.email = email.trim();
+        if (password.trim()) updates.password = password.trim();
+        if (language !== user.language) updates.language = language;
+
+        if (Object.keys(updates).length > 0) {
+            updateProfile(user.id, updates, userDatabase);
+            setPassword(''); // Limpa o campo de senha após salvar
+            router.back();
+        } else {
+            Alert.alert(t.settings.noChanges, t.settings.noChangesMessage);
+        }
     };  
+
+    function handleLogout() {
+        logout(sessionDatabase);
+    }
 
     function handleDeleteAccount() {
         // Aqui você pode implementar a lógica para deletar a conta do usuário
@@ -44,7 +77,7 @@ export default function Settings() {
                     </View>
 
                 <View style={{ flex: 1, alignItems: 'center' }}>
-                    <Text style={styles.title}>Configurações</Text>
+                    <Text style={styles.title}>{t.settings.title}</Text>
                 </View>
                 </View>
 
@@ -71,40 +104,41 @@ export default function Settings() {
 
                 {/* Informações da conta */}
                 <View style={styles.form}>
-                    <Text style={styles.label}>Nome</Text>
+                    <Text style={styles.label}>{t.settings.newName}</Text>
                     <TextInput
                         style={styles.input}
-                        placeholder="Digite seu nome completo"
-                        placeholderTextColor={colors.gray[400]}
+                        placeholderTextColor={colors.gray[700]}
                         value={name}
                         onChangeText={setName}
+                        editable={!isLoading}
                     />
-                    <Text style={styles.label}>Email</Text>
+                    <Text style={styles.label}>{t.common.email}</Text>
                     <TextInput
                         style={styles.input}
-                        placeholder="exemplo@email.com"
-                        placeholderTextColor={colors.gray[400]}
+                        placeholderTextColor={colors.gray[700]}
                         value={email}
                         onChangeText={setEmail}
                         keyboardType="email-address"
                         autoCapitalize="none"
+                        editable={!isLoading}
                     />
-                    <Text style={styles.label}>Senha</Text>
+                    <Text style={styles.label}>{t.settings.newPassword}</Text>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         <TextInput
                             style={[styles.input, { flex: 1 }]}
-                            placeholder="************"
-                            placeholderTextColor={colors.gray[400]}
+                            placeholder={t.settings.newPasswordPlaceholder}
+                            placeholderTextColor={colors.gray[700]}
                             value={password}
                             onChangeText={setPassword}
                             secureTextEntry={!showPassword}
                             autoCapitalize="none"
+                            editable={!isLoading}
                         />
                         <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
                             <Feather
-                                name={showPassword ? "eye-off" : "eye"}
+                                name={showPassword ? "eye" : "eye-off"}
                                 size={22}
-                                color={colors.gray[400]}
+                                color={colors.gray[700]}
                                 style={{ marginLeft: 8 }}
                             />
                         </TouchableOpacity>
@@ -113,18 +147,20 @@ export default function Settings() {
 
                 {/* Botões */}
                 <View style={styles.bottomButtons}>
-                    <TouchableOpacity 
+                    <Button
+                        title={t.settings.saveChanges}
                         onPress={handleSave}
-                        activeOpacity={0.7}
-                        style={styles.saveButton}>
-                        <Text style={styles.saveButtonText}>Salvar</Text>
-                    </TouchableOpacity>
+                        isProcessing={isLoading}
+                    />
+                    <Button
+                        title={t.settings.logout}
+                        onPress={handleLogout}
+                    />
                     <TouchableOpacity
                         onPress={handleDeleteAccount}
                         activeOpacity={0.7}
                         >
-                        <Text
-                         style={styles.deleteButtonText}>DELETAR CONTA</Text>
+                        <Text style={styles.deleteButtonText}>{t.settings.deleteAccount}</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -201,19 +237,7 @@ const styles = StyleSheet.create({
         marginTop: 'auto',
         marginBottom: 32,
         alignItems: 'center',
-        gap: 24,
-    },
-    saveButton: {
-        backgroundColor: colors.gray[700],
-        paddingVertical: 14,
-        borderRadius: 50,
-        alignItems: 'center',
-        width: '100%',
-        marginBottom: 12,
-    },
-    saveButtonText: {
-        color: colors.black,
-        fontSize: 16,
+        gap: 16,
     },
     deleteButtonText: {
         color: colors.red[400],

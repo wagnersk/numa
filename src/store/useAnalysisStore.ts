@@ -7,6 +7,8 @@ import { TransactionTypes } from "@/utils/TransactionTypes";
 import { colors } from "@/theme";
 import dayjs from "dayjs";
 import { CurrencyProps } from "@/utils/currencyList";
+import { useUserStore } from "./useUserStore";
+import { router } from "expo-router";
 
 // Type definitions
 export type TargetProps = {
@@ -98,6 +100,16 @@ interface AnalysisState {
   fetchTargetById: (id: string, db: ReturnType<typeof useTargetDatabase>) => Promise<TargetByIdProps | null>;
 }
 
+// Helper function to get user ID and handle unauthenticated state
+const getUserId = () => {
+  const { user } = useUserStore.getState();
+  if (!user?.id) {
+    router.replace("/auth/login");
+    throw new Error("Usuário não autenticado. Redirecionando para o login.");
+  }
+  return user.id;
+}
+
 // Store implementation
 export const useAnalysisStore = create<AnalysisState>((set) => ({
   // Initial state
@@ -115,7 +127,8 @@ export const useAnalysisStore = create<AnalysisState>((set) => ({
 
   fetchTargets: async (db) => {
     try {
-      const response = await db.showAll();
+      const userId = getUserId();
+      const response = await db.showAll(userId);
       const mappedTargets = response.map((item) => ({
         id: item.id,
         value: item.current,
@@ -127,13 +140,19 @@ export const useAnalysisStore = create<AnalysisState>((set) => ({
       /* set({ targets: mappedTargets }); */
       return mappedTargets;
     } catch (error) {
-      Alert.alert("Erro", "Não foi possível carregar as metas.");
+      if (error instanceof Error && error.message.includes("Usuário não autenticado")) {
+        console.log("Usuário não autenticado, redirecionando...");
+      } else {
+        Alert.alert("Erro", "Não foi possível carregar as metas.");
+        console.log(error);
+      }
       return [];
     }
   },
   fetchTargetsByCurrency: async (db,currencyType) => {
     try {
-      const response = await db.showAllByCurrency(currencyType);
+      const userId = getUserId();
+      const response = await db.showAllByCurrency(currencyType, userId);
 
       const mappedTargets = response.map((item) => ({
         id: item.id,
@@ -146,14 +165,20 @@ export const useAnalysisStore = create<AnalysisState>((set) => ({
       /* set({ targets: mappedTargets }); */
       return mappedTargets;
     } catch (error) {
-      Alert.alert("Erro", "Não foi possível carregar as metas.");
+      if (error instanceof Error && error.message.includes("Usuário não autenticado")) {
+        console.log("Usuário não autenticado, redirecionando...");
+      } else {
+        Alert.alert("Erro", "Não foi possível carregar as metas.");
+        console.log(error);
+      }
       return [];
     }
   },
 
   fetchTargetById: async (id, db) => {
     try {
-      const response = await db.show(id);
+      const userId = getUserId();
+      const response = await db.show(id, userId);
       
 
       return {
@@ -172,14 +197,20 @@ export const useAnalysisStore = create<AnalysisState>((set) => ({
         photo_file_name: response.photo_file_name,
       };
     } catch (error) {
-      Alert.alert("Erro", "Não foi possível carregar a meta.");
+      if (error instanceof Error && error.message.includes("Usuário não autenticado")) {
+        console.log("Usuário não autenticado, redirecionando...");
+      } else {
+        Alert.alert("Erro", "Não foi possível carregar a meta.");
+        console.log(error);
+      }
       return null;
     }
   },
 
   fetchTransactions: async (db, targets) => {
     try {
-      const response = await db.listAll();
+      const userId = getUserId();
+      const response = await db.listAll(userId);
       const formattedTransactions = response.map((item) => {
         const target = targets.find((tg) => tg.id === item.target_id);
         return {
@@ -198,12 +229,19 @@ export const useAnalysisStore = create<AnalysisState>((set) => ({
 
       /* set({ transactions: formattedTransactions }); */
     } catch (error) {
-      Alert.alert("Erro", "Não foi possível carregar as transações.");
+      if (error instanceof Error && error.message.includes("Usuário não autenticado")) {
+        console.log("Usuário não autenticado, redirecionando...");
+      } else {
+        Alert.alert("Erro", "Não foi possível carregar as transações.");
+        console.log(error);
+      }
+      return [];
     }
   },
   fetchTransactionsByTargetsAllData: async (db, targets,target_ids,currencyType) => {
     try {
-      const response = await db.listAllDataByTargetsId(target_ids);
+      const userId = getUserId();
+      const response = await db.listAllDataByTargetsId(target_ids, userId);
       const formattedTransactions = response.map((item) => {
         const target = targets.find((tg) => tg.id === item.target_id);
         return {
@@ -231,7 +269,13 @@ export const useAnalysisStore = create<AnalysisState>((set) => ({
 
       /* set({ transactions: formattedTransactions }); */
     } catch (error) {
-      Alert.alert("Erro", "Não foi possível carregar as transações.");
+      if (error instanceof Error && error.message.includes("Usuário não autenticado")) {
+        console.log("Usuário não autenticado, redirecionando...");
+      } else {
+        Alert.alert("Erro", "Não foi possível carregar as transações.");
+        console.log(error);
+      }
+      return [];
     }
   },
 }));

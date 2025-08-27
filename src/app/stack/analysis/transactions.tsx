@@ -10,6 +10,7 @@ import { useTargetDatabase } from '@/database/useTargetDatabase';
 import { useTransactionsDatabase } from '@/database/useTransactionsDatabase';
 import TransactionFilterPills from '@/components/TransactionFilterPills';
 import { TransactionTypes } from '@/utils/TransactionTypes';
+import { useTranslations } from '@/libs/i18n';
 
 export default function TransactionsScreen() {
   const insets = useSafeAreaInsets();
@@ -26,8 +27,9 @@ export default function TransactionsScreen() {
     const [ targets, setTargets ] = useState<TargetProps[]>([])
     const [ transactions, setTransactions ] = useState<TransactionAllDataProps[]>([])
     const [ isFetching, setIsFetching] = useState(true);
+    const t = useTranslations();
       
-    const selectedTargetName = selectedPill === 0 ? 'Todas as Metas' : targets[selectedPill - 1]?.pillName;
+    const selectedTargetName = selectedPill === 0 ? t.common.allGoals : targets[selectedPill - 1]?.pillName;
 
 
     async function fetchData() {
@@ -80,10 +82,10 @@ export default function TransactionsScreen() {
         </View>
 
         
-      <Text style={ styles.title }>Transações {currencyType}</Text>
+      <Text style={ styles.title }>{t.transactions.title} {currencyType}</Text>
         <View style={{ width: 50 }} />
       </View>
-      <Text style={styles.subtitle}>Exibindo transações para: {selectedTargetName}</Text>
+      <Text style={styles.subtitle}>{t.transactions.showingFor} {selectedTargetName}</Text>
       <View  style={{ paddingHorizontal: 24 }}>
         <TransactionFilterPills />
       </View>
@@ -92,7 +94,7 @@ export default function TransactionsScreen() {
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <TransactionDetailedItem item={item} />}
         contentContainerStyle={styles.list}
-        ListEmptyComponent={<Text style={styles.emptyText}>Nenhuma transação encontrada.</Text>}
+        ListEmptyComponent={<Text style={styles.emptyText}>{t.transactions.empty}</Text>}
       />
     </View>
   );

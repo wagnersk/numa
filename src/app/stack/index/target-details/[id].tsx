@@ -1,5 +1,5 @@
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
-import { TouchableOpacity, ImageBackground, Alert, StyleSheet, Animated } from "react-native";
+import { TouchableOpacity, ImageBackground, StyleSheet, Animated } from "react-native";
 import { BlurView } from 'expo-blur';
 import { Blurhash } from "react-native-blurhash";
 
@@ -10,7 +10,7 @@ import { useCallback, useState, useRef } from "react";
 import { useTargetDatabase } from "@/database/useTargetDatabase";
 import { getLocalPhotoUri } from "@/utils/getLocalPhotoUri";
 import { getContrastColor } from "@/utils/getContrastColor";
-import { TargetAllDataProps, TargetByIdProps, useAnalysisStore } from "@/store/useAnalysisStore";
+import { TargetByIdProps, useAnalysisStore } from "@/store/useAnalysisStore";
 
 export default function TargetDetail() {
   const params = useLocalSearchParams<{ id: string }>();

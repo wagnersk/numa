@@ -2,12 +2,14 @@ import { create } from "zustand";
 import { Alert } from "react-native";
 import { router } from "expo-router";
 import { UnsplashPhoto, UnsplashService } from "@/services/UnsplashService";
+import { useUserStore } from "@/store/useUserStore";
 import { useTargetDatabase } from "@/database/useTargetDatabase";
 import { useTransactionsDatabase } from "@/database/useTransactionsDatabase";
 import { usePhotosDatabase } from "@/database/usePhotosDatabase";
 import { getRandomUnusedColor } from "@/utils/getRandomColor";
 import { numberToCurrency } from "@/utils/numberToCurrency";
 import { colorsList } from "@/utils/colorList";
+import { i18n } from "@/libs/i18n";
 
 // Type definitions
 export type TargetData = {
@@ -50,6 +52,7 @@ export type TargetByPercentageProps = {
 
     target:string;
     currency:string;
+    currencyType: string;
     color:string;
     
     start_date:number;
@@ -65,19 +68,26 @@ export type TargetByPercentageProps = {
     percentage:number;
 }
  
- 
-
-export interface TempTargetData {
-  photo: UnsplashPhoto | null;
+export interface TargetFormData {
+  id?: number;
+  name: string;
+  currency: string;
+  current: number;
+  target: number;
+  start_date: number;
+  end_date: number;
   color: string | null;
+  photo: UnsplashPhoto | null;
+  photo_file_name: string | null;
 }
 
 // Store State and Actions interface
 interface TargetStoreState {
-  tempTarget: TempTargetData;
+  tempTarget: TargetFormData;
   isLoading: boolean;
+  isInitialized: boolean;
 
-  setTempTarget: (target: Partial<TempTargetData>) => void;
+  setTempTarget: (target: Partial<TargetFormData>) => void;
   resetStore: () => Promise<void>;
   initializeNewTarget: (db: ReturnType<typeof useTargetDatabase>) => Promise<void>;
 
@@ -87,54 +97,88 @@ interface TargetStoreState {
 
   getAvailableColors: (db: ReturnType<typeof useTargetDatabase>) => Promise<string[]>;
 
+  saveTransaction: (
+    targetId: number,
+    amount: number,
+    type: 'deposit' | 'withdraw',
+    observation: string | null,
+    databases: {
+      targetDatabase: ReturnType<typeof useTargetDatabase>;
+      transactionsDatabase: ReturnType<typeof useTransactionsDatabase>;
+    }
+  ) => Promise<void>;
+
   handleSubmit: (
     databases: {
       targetDatabase: ReturnType<typeof useTargetDatabase>;
       transactionsDatabase: ReturnType<typeof useTransactionsDatabase>;
       photosDatabase: ReturnType<typeof usePhotosDatabase>;
     },
-    editting: boolean,
-    targetData: TargetData
+    editting: boolean
   ) => Promise<void>;
   deleteTarget: (databases: {
     targetDatabase: ReturnType<typeof useTargetDatabase>;
     transactionsDatabase: ReturnType<typeof useTransactionsDatabase>;
     photosDatabase: ReturnType<typeof usePhotosDatabase>;
-  },
-  targetData: TargetData
-  ) => Promise<void>;
+  }) => Promise<void>;
 }
 
-const initialTempTarget: TempTargetData = {
-  photo: null,
+const initialTempTarget: TargetFormData = {
+  id: undefined,
+  name: "",
+  currency: "BRL",
+  current: 0,
+  target: 0,
+  start_date: 0,
+  end_date: 0,
   color: null,
+  photo: null,
+  photo_file_name: null,
+};
+
+// Helper function to get user ID and handle unauthenticated state
+const getUserId = () => {
+  // Note: This is a helper and not a hook, so it doesn't have access to the translation hook.
+  // The alerts here will be in the default language.
+  // For translated alerts, the call site (the action) should handle it.
+  const { user } = useUserStore.getState();
+  if (!user?.id) {
+    router.replace("/auth/login");
+    throw new Error("Usuário não autenticado. Redirecionando para o login.");
+  }
+  return user.id;
 };
 
 export const useTargetStore = create<TargetStoreState>((set, get) => ({
   // Initial state
   tempTarget: initialTempTarget,
   isLoading: false,
+  isInitialized: false,
 
   // Actions
-  setTempTarget: (newData: Partial<TempTargetData>) =>
+  setTempTarget: (newData: Partial<TargetFormData>) =>
     set((state) => ({
       tempTarget: { ...state.tempTarget, ...newData },
+      isInitialized: true,
     })),
 
   resetStore: async () => {
     set({
       tempTarget: initialTempTarget,
       isLoading: false,
+      isInitialized: false,
     });
   },
 
   initializeNewTarget: async (db) => {
-    const allTargets = await db.showAll();
+    const userId = getUserId();
+    const allTargets = await db.showAll(userId);
     const usedColors = allTargets.map((t) => t.color).filter(Boolean);
     const randomColor = getRandomUnusedColor(usedColors);
     set({
-      tempTarget: { color: randomColor, photo: null },
+      tempTarget: { ...initialTempTarget, color: randomColor },
       isLoading: false,
+      isInitialized: true,
     });
   },
 
@@ -142,8 +186,9 @@ export const useTargetStore = create<TargetStoreState>((set, get) => ({
 
     fetchTargetsByPercentage: async (db) => {
       try {
-        const response = await db.listByPercentage();
-        const mappedTargets: TargetsData[] = response.map((item) => ({
+        const userId = getUserId();
+        const response = await db.listByPercentage(userId);
+        const mappedTargets: TargetByPercentageProps[] = response.map((item) => ({
           id: Number(item.id),
           target: numberToCurrency(item.amount),
           currency: numberToCurrency(item.current),
@@ -160,19 +205,25 @@ export const useTargetStore = create<TargetStoreState>((set, get) => ({
           photo_direct_url: item.photo_direct_url,
         }));
 
-      return mappedTargets
-        
+        return mappedTargets;
       } catch (error) {
-        Alert.alert("Erro", "Não foi possível carregar as metas.");
-        console.log(error);
-      } finally {
+        // Se o erro for de usuário não autenticado, não mostre o alerta.
+        // A função getUserId já cuida do redirecionamento.
+        if (error instanceof Error && error.message.includes("Usuário não autenticado")) {
+          console.log("Usuário não autenticado, redirecionando...");
+        } else {
+          Alert.alert(i18n['pt-br'].common.error, i18n['pt-br'].alerts.loadGoalsError); // Default lang
+          console.log(error);
+        }
+        return []; // Retorna um array vazio em caso de erro para a UI não quebrar.
       }
     },
 
     fetchTarget: async (id, db) => {
       set({ isLoading: true });
       try {
-        const response = await db.show(id);
+        const userId = getUserId();
+        const response = await db.show(id, userId);
         if (!response) return null;
 
         return {
@@ -188,7 +239,7 @@ export const useTargetStore = create<TargetStoreState>((set, get) => ({
           
         };
       } catch (error) {
-        Alert.alert("Erro", "Não foi possível carregar a meta.");
+        Alert.alert(i18n['pt-br'].common.error, i18n['pt-br'].alerts.loadGoalError); // Default lang
         console.log(error);
         return null;
       } finally {
@@ -198,7 +249,8 @@ export const useTargetStore = create<TargetStoreState>((set, get) => ({
     fetchFormattedTarget: async (id, db) => {
       set({ isLoading: true });
       try {
-        const response = await db.show(id);
+        const userId = getUserId();
+        const response = await db.show(id, userId);
         if (!response) return null;
 
         return {
@@ -219,7 +271,7 @@ export const useTargetStore = create<TargetStoreState>((set, get) => ({
           
         };
       } catch (error) {
-        Alert.alert("Erro", "Não foi possível carregar a meta.");
+        Alert.alert(i18n['pt-br'].common.error, i18n['pt-br'].alerts.loadGoalError); // Default lang
         console.log(error);
         return null;
       } finally {
@@ -228,73 +280,130 @@ export const useTargetStore = create<TargetStoreState>((set, get) => ({
     },
     getAvailableColors: async (db: ReturnType<typeof useTargetDatabase>) => {
     try {
-      const response = await db.showAll();
+      const userId = getUserId();
+      const response = await db.showAll(userId);
       const usedColors = response.map((item) => item.color);
       const availableColors = colorsList.filter((c) => !usedColors.includes(c));
       return availableColors;
     } catch (error) {
-      Alert.alert("Erro", "Não foi possível carregar as cores.");
+      Alert.alert(i18n['pt-br'].common.error, i18n['pt-br'].alerts.loadColorsError); // Default lang
       console.log(error);
       return [];
     }
 },
 
-  handleSubmit: async (databases, editting, targetData) => {
-    const { tempTarget } = get();
-    const { photo } = tempTarget;
-    const color = tempTarget.color || targetData.color;
+  saveTransaction: async (targetId, amount, type, observation, { targetDatabase, transactionsDatabase }) => {
+    set({ isLoading: true });
+    const lang = useUserStore.getState().user?.language || 'pt-br';
+    const t = i18n[lang];
 
-    if (!targetData.name.trim() || Number(targetData.target) <= 0) return Alert.alert("Atenção", "Preencha nome e valor da meta.");
-    if (!editting && !photo) return Alert.alert("Atenção", "Adicione uma imagem para continuar.");
-    if (editting && !targetData.photo_file_name && !photo) return Alert.alert("Atenção", "Adicione uma imagem para continuar.");
-    if (!targetData.start_date || !targetData.end_date) return Alert.alert("Atenção", "Selecione datas válidas para a meta.");
-    if (targetData.end_date <= targetData.start_date) return Alert.alert("Atenção", "A data de término deve ser maior que a data de início.");
-    if (targetData.current > targetData.target && targetData.current > 0 && targetData.target > 0) return Alert.alert("Atenção", "Valores inválidos para saldo ou objetivo.");
+    try {
+      const userId = getUserId();
+      const target = await targetDatabase.show(String(targetId), userId);
+
+      if (!target) {
+        throw new Error("Target not found");
+      }
+
+      if (amount <= 0) {
+        Alert.alert(t.common.attention, t.alerts.zeroValueError);
+        set({ isLoading: false });
+        return;
+      }
+
+      if (type === 'withdraw' && amount > target.current) {
+        const formattedAmount = numberToCurrency(target.current, target.currency as any);
+        Alert.alert(t.common.attention, t.alerts.withdrawAmountError.replace('{amount}', formattedAmount));
+        set({ isLoading: false });
+        return;
+      }
+
+      if (type === 'deposit' && (target.current + amount) > target.amount) {
+        const formattedAmount = numberToCurrency(target.amount, target.currency as any);
+        Alert.alert(t.common.attention, t.alerts.depositAmountError.replace('{amount}', formattedAmount));
+        set({ isLoading: false });
+        return;
+      }
+
+      const transactionAmount = type === 'deposit' ? amount : -amount;
+      await transactionsDatabase.create({ user_id: userId, target_id: targetId, amount: transactionAmount, observation });
+
+      Alert.alert(t.common.success, t.alerts.transactionSaved, [{ text: t.common.ok, onPress: () => router.back() }]);
+    } catch (error) {
+      if (!(error instanceof Error && error.message.includes("Usuário não autenticado"))) {
+        console.log(error);
+        Alert.alert(t.common.error, t.alerts.transactionSaveError);
+      }
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  handleSubmit: async (databases, editting) => {
+    const { tempTarget: targetData } = get();
+    const { photo } = targetData;
+    const color = targetData.color;
+    const lang = useUserStore.getState().user?.language || 'pt-br';
+    const t = i18n[lang];
+
+
+    if (!targetData.name.trim() || Number(targetData.target) <= 0) return Alert.alert(t.common.attention, t.alerts.fillNameAndValue);
+    if (!color) return Alert.alert(t.common.attention, t.alerts.selectColor);
+    if (!editting && !photo) return Alert.alert(t.common.attention, t.alerts.addImage);
+    if (editting && !targetData.photo_file_name && !photo) return Alert.alert(t.common.attention, t.alerts.addImage);
+    if (!targetData.start_date || !targetData.end_date) return Alert.alert(t.common.attention, t.alerts.selectValidDates);
+    if (targetData.end_date <= targetData.start_date) return Alert.alert(t.common.attention, t.alerts.endDateAfterStart);
+    if (targetData.current > targetData.target && targetData.current > 0 && targetData.target > 0) return Alert.alert(t.common.attention, t.alerts.invalidValues);
 
     set({ isLoading: true });
     try {
+      const userId = getUserId();
       if (editting) {
         let photoData = null;
         if (photo) {
           photoData = await UnsplashService.downloadPhoto(photo);
           await UnsplashService.deleteLocalPhoto(targetData.photo_file_name!);
         }
-        await databases.targetDatabase.update({ id: targetData.id!, name: targetData.name, amount: targetData.target, currency: targetData.currency, color: color, end_date: targetData.end_date });
-        if (photoData) await databases.photosDatabase.update({ id: targetData.id!, file_name: photoData.file_name, color: photoData.color, blur_hash: photoData.blur_hash, direct_url: photoData.direct_url });
-        Alert.alert("Meta Atualizada", "A meta foi atualizada com sucesso!", [{ text: "Ok", onPress: () => { get().resetStore(); router.push("/tabs"); } }]);
+        await databases.targetDatabase.update({ id: targetData.id!, name: targetData.name, amount: targetData.target, currency: targetData.currency, color: color, end_date: targetData.end_date }, userId);
+        if (photoData) await databases.photosDatabase.update({ id: targetData.id!, file_name: photoData.file_name, color: photoData.color, blur_hash: photoData.blur_hash, direct_url: photoData.direct_url }, userId);
+        Alert.alert(t.common.success, t.alerts.targetUpdated, [{ text: t.common.ok, onPress: () => { get().resetStore(); router.push("/tabs"); } }]);
       } else {
         const photoData = await UnsplashService.downloadPhoto(photo!);
-        const targetId = await databases.targetDatabase.create({ name: targetData.name, amount: targetData.target, currency: targetData.currency, color: color, start_date: targetData.start_date, end_date: targetData.end_date });
-        await databases.transactionsDatabase.create({ amount: targetData.current, target_id: targetId, observation: "Saldo inicial" });
-        await databases.photosDatabase.create({ target_id: targetId, file_name: photoData.file_name, color: photoData.color, blur_hash: photoData.blur_hash, direct_url: photoData.direct_url });
-        Alert.alert("Nova Meta", "Meta criada com sucesso!", [{ text: "Ok", onPress: () => { get().resetStore(); router.push("/tabs"); } }]);
+        const targetId = await databases.targetDatabase.create({ user_id: userId, name: targetData.name, amount: targetData.target, currency: targetData.currency, color: color, start_date: targetData.start_date, end_date: targetData.end_date });
+        if (targetData.current > 0) await databases.transactionsDatabase.create({ user_id: userId, amount: targetData.current, target_id: targetId, observation: "Saldo inicial" });
+        await databases.photosDatabase.create({ user_id: userId, target_id: targetId, file_name: photoData.file_name, color: photoData.color, blur_hash: photoData.blur_hash, direct_url: photoData.direct_url });
+        Alert.alert(t.targetForm.newTitle, t.alerts.targetCreated, [{ text: t.common.ok, onPress: () => { get().resetStore(); router.push("/tabs"); } }]);
       }
     } catch (error) {
       console.log(error);
-      Alert.alert("Erro", `Não foi possível ${editting ? 'atualizar' : 'criar'} a meta.`);
+      Alert.alert(t.common.error, editting ? t.alerts.targetUpdateError : t.alerts.targetCreateError);
     } finally {
       set({ isLoading: false });
     }
   },
 
-  deleteTarget: async (databases, targetData) => {
-    Alert.alert("Atenção", "Deseja realmente deletar essa meta?", [
-      { text: "Cancelar", style: "cancel" },
+  deleteTarget: async (databases) => {
+    const lang = useUserStore.getState().user?.language || 'pt-br';
+    const t = i18n[lang];
+
+    Alert.alert(t.common.attention, t.alerts.confirmDelete, [
+      { text: t.common.cancel, style: "cancel" },
       {
-        text: "Deletar", style: "destructive",
+        text: t.common.delete, style: "destructive",
         onPress: async () => {
           set({ isLoading: true });
+          const { tempTarget: targetData } = get();
           try {
+            const userId = getUserId();
             await UnsplashService.deleteLocalPhoto(targetData.photo_file_name!);
-            await databases.photosDatabase.remove(Number(targetData.id));
-            await databases.transactionsDatabase.remove(Number(targetData.id));
-            await databases.targetDatabase.remove(Number(targetData.id));
-            Alert.alert("Meta deletada com sucesso!");
+            // ON DELETE CASCADE will handle photos and transactions deletion
+            await databases.targetDatabase.remove(Number(targetData.id), userId);
+            Alert.alert(t.alerts.targetDeleted);
             get().resetStore();
             router.push("/tabs");
           } catch (error) {
             console.log(error);
-            Alert.alert("Erro", "Não foi possível deletar a meta.");
+            Alert.alert(t.common.error, t.alerts.targetDeleteError);
           } finally {
             set({ isLoading: false });
           }

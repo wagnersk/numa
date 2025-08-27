@@ -21,7 +21,7 @@ import { Button } from "@/components/Button";
 import { formatDate } from "@/utils/formatDate";
 
 import { useFocusEffect, useRouter } from "expo-router";
-import { TargetData, useTargetStore } from "@/store/useTargetStore";
+import { TargetFormData, useTargetStore } from "@/store/useTargetStore";
 import { useTargetDatabase } from "@/database/useTargetDatabase";
 import { useTransactionsDatabase } from "@/database/useTransactionsDatabase";
 import { usePhotosDatabase } from "@/database/usePhotosDatabase";
@@ -30,6 +30,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { addDays } from "@/utils/addDays";
 import { getLocalPhotoUri } from "@/utils/getLocalPhotoUri";
 import { currenciesArray } from "@/utils/currencyList";
+import { useTranslations } from "@/libs/i18n";
 
 interface TargetFormProps {
   editting:boolean
@@ -51,6 +52,7 @@ export function TargetForm({
   };
 
   const router = useRouter();
+  const t = useTranslations();
   const {
     isLoading,
     fetchTarget,
@@ -58,24 +60,9 @@ export function TargetForm({
     deleteTarget,
     initializeNewTarget,
     resetStore,
-    setTempTarget,
-  } = useTargetStore();
-
-  const photo = useTargetStore(state => state.tempTarget.photo);
-  const color = useTargetStore(state => state.tempTarget.color);
-
-  const initialTargetData: TargetData = {
-    name: "",
-    currency: "BRL",
-    current: 0,
-    target: 0,
-    start_date: 0,
-    end_date: 0,
-    color: colors.white,
-    photo_file_name: null,
-  };
-
-  const [targetData, setTargetData] = useState<TargetData>(initialTargetData);
+    setTempTarget: setTargetData,
+    tempTarget: targetData,
+  } = useTargetStore(); 
 
   const targetDatabase = useTargetDatabase();
   const transactionsDatabase = useTransactionsDatabase();
@@ -84,45 +71,45 @@ export function TargetForm({
   const [ isStartPickerVisible, setStartPickerVisible ] = useState(false);
   const [ isEndPickerVisible, setEndPickerVisible ] = useState(false);
 
- 
+  // Limpa o formulário ao sair da tela
+  useEffect(() => {
+    return () => {
+      resetStore();
+    };
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
       async function loadData() {
-        if (editting && paramsId) {
+        const { id: currentIdInStore, isInitialized } = useTargetStore.getState();
+
+        if (editting && paramsId && String(currentIdInStore) !== paramsId) {
           const fetchedData = await fetchTarget(paramsId, targetDatabase);
           if (fetchedData) {
-            setTargetData(fetchedData);
+            setTargetData({ ...fetchedData, photo: null });
           }
-        } else {
-           const { color } = useTargetStore.getState().tempTarget;
-           if (!color) {
-            initializeNewTarget(targetDatabase);
-          }
+        } else if (!editting && !isInitialized) {
+          initializeNewTarget(targetDatabase);
         }
       }
       loadData();
-
-      return () => {
-        setTargetData(initialTargetData);
-      };
     }, [editting, paramsId])
   );
 
   const handleFormSubmit = () => {
-    handleSubmit({ targetDatabase, transactionsDatabase, photosDatabase }, editting, targetData);
+    handleSubmit({ targetDatabase, transactionsDatabase, photosDatabase }, editting);
   };
 
   const handleDelete = () => {
-    deleteTarget({ targetDatabase, transactionsDatabase, photosDatabase }, targetData);
+    deleteTarget({ targetDatabase, transactionsDatabase, photosDatabase });
   };
 
-  const handleSetData = (data: Partial<TargetData>) => {
-    setTargetData((prev) => ({ ...prev, ...data }));
+  const handleSetData = (data: Partial<TargetFormData>) => {
+    setTargetData(data);
   };
 
   const handleSetDate = (key: 'start_date' | 'end_date', date: Date) => {
-    setTargetData((prev) => ({ ...prev, [key]: date.getTime() }));
+    setTargetData({ [key]: date.getTime() });
   };
 
   return (
@@ -138,7 +125,7 @@ export function TargetForm({
               <Feather name="arrow-left" size={24} color={colors.black} />
             </TouchableOpacity>
           }
-          <Text style={styles.title}>{editting ? "Editar Meta" : "Nova Meta"}</Text>
+          <Text style={styles.title}>{editting ? t.targetForm.editTitle : t.targetForm.newTitle}</Text>
           {editting &&
           <View style={{ width: 24 }} /> 
           }
@@ -149,7 +136,7 @@ export function TargetForm({
           <View style={styles.inputSearchWrapper}>
             <TextInput
               style={styles.input}
-              placeholder="Nome da meta"
+              placeholder={t.targetForm.goalName}
               placeholderTextColor={colors.gray[400]}
               value={targetData.name}
               onChangeText={(name) => handleSetData({ name })}
@@ -164,7 +151,7 @@ export function TargetForm({
           <View style={styles.editButtonWrapper}>
             <TouchableOpacity
               onPress={onEditColor}
-              style={[styles.editButton, { backgroundColor: color || targetData.color }]}
+              style={[styles.editButton, { backgroundColor: targetData.color || colors.gray[300] }]}
               disabled={isLoading}
             >
               <Feather name="edit-3" size={20} color={colors.black} />
@@ -177,18 +164,18 @@ export function TargetForm({
           onPress={onEditPhoto}
           style={[
             styles.bannerUpload,
-            (photo || targetData.photo_file_name) && { borderWidth: 0 },
+            (targetData.photo || targetData.photo_file_name) && { borderWidth: 0 },
             editting && { flex: 1 },
           ]}
           disabled={isLoading}
         >
           <View style={styles.bannerTextWrapper}>
-            {photo || targetData.photo_file_name ? (
-              <Image source={{ uri: photo ? photo.urls.regular : getLocalPhotoUri(targetData.photo_file_name!) }} style={styles.imagePreview} resizeMode="cover" />
+            {targetData.photo || targetData.photo_file_name ? (
+              <Image source={{ uri: targetData.photo ? targetData.photo.urls.regular : getLocalPhotoUri(targetData.photo_file_name!) }} style={styles.imagePreview} resizeMode="cover" />
             ) : (
               <>
                 <Feather name="image" size={24} color={colors.gray[500]} />
-                <Text style={styles.bannerText}>Adicionar Imagem ao Banner</Text>
+                <Text style={styles.bannerText}>{t.targetForm.addImage}</Text>
               </>
             )}
           </View>
@@ -233,7 +220,7 @@ export function TargetForm({
                   ? "$"
                   : "€"
                 }
-                label="Saldo Inicial"
+                label={t.targetForm.initialBalance}
                 value={targetData.current}
                 onChangeValue={(current) => handleSetData({ current })}
                 editable={!isLoading}
@@ -248,7 +235,7 @@ export function TargetForm({
                     ? "$"
                     : "€"
                 }
-                label="Objetivo"
+                label={t.targetForm.goal}
                 value={targetData.target}
                 onChangeValue={(target) => handleSetData({ target })}
                 editable={!isLoading}
@@ -261,7 +248,7 @@ export function TargetForm({
                  {!editting && 
                 
             <View style={{ flex: 1 }}>
-              <Text style={styles.label}>Início</Text>
+              <Text style={styles.label}>{t.targetForm.startDate}</Text>
               <TouchableOpacity
                 style={styles.dateButton}
                 onPress={() => setStartPickerVisible(true)}
@@ -273,14 +260,14 @@ export function TargetForm({
                     targetData.start_date ? styles.dateTextActive : styles.dateTextInactive,
                   ]}
                 >
-                  {targetData.start_date ? formatDate(new Date(targetData.start_date)) : "Selecionar data"}
+                  {targetData.start_date ? formatDate(new Date(targetData.start_date)) : t.targetForm.selectDate}
                 </Text>
               </TouchableOpacity>
             </View>
  }
 
             <View style={{ flex: 1 }}>
-              <Text style={styles.label}>Fim</Text>
+              <Text style={styles.label}>{t.targetForm.endDate}</Text>
               <TouchableOpacity
                 style={styles.dateButton}
                 onPress={() => setEndPickerVisible(true)}
@@ -292,7 +279,7 @@ export function TargetForm({
                     targetData.end_date ? styles.dateTextActive : styles.dateTextInactive,
                   ]}
                 >
-                  {targetData.end_date ? formatDate(new Date(targetData.end_date)) : "Selecionar data"}
+                  {targetData.end_date ? formatDate(new Date(targetData.end_date)) : t.targetForm.selectDate}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -333,10 +320,10 @@ export function TargetForm({
         </View>
 
         {/* Botão */}
-        <Button title={editting ? "Atualizar" : "Cadastrar"} onPress={handleFormSubmit} isProcessing={isLoading} />
+        <Button title={editting ? t.common.update : t.common.register} onPress={handleFormSubmit} isProcessing={isLoading} />
 
         {editting &&
-        <Button title={'Deletar'} onPress={handleDelete} isProcessing={isLoading} type={'delete'}/>
+        <Button title={t.common.delete} onPress={handleDelete} isProcessing={isLoading} type={'delete'}/>
         }
         
       </KeyboardAvoidingView>

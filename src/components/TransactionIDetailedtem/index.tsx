@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { View, Text, StyleSheet, Image } from "react-native";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { colors, fontFamily } from "@/theme";
+import { getLocalPhotoUri } from "@/utils/getLocalPhotoUri";
 import { TransactionAllDataProps } from "@/store/useAnalysisStore";
 import { Blurhash } from "react-native-blurhash";
 
@@ -12,13 +13,13 @@ export default function TransactionDetailedItem({ item }: { item: TransactionAll
     <View style={styles.row}>
       {/* Foto com borda da cor da foto */}
       <View style={styles.leftSection}>
-        {item.photo?.directUrl ? (
+        {item.photo?.fileName ? (
           <View style={[styles.photoWrapper, { borderColor: item.photo.color || colors.gray[300] }]}>
             {!loaded && item.photo?.blurHash && (
               <Blurhash style={styles.photo} blurhash={item.photo.blurHash} />
             )}
             <Image
-              source={{ uri: item.photo.directUrl }}
+              source={{ uri: getLocalPhotoUri(item.photo.fileName) }}
               style={styles.photo}
               onLoadEnd={() => setLoaded(true)}
             />

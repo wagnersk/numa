@@ -7,44 +7,29 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from "@/theme";
 
 
-export type HomeHeaderProps = {
-    label: string
-    greetings: string
-
-}
-
 type Props = {
-    data:HomeHeaderProps
-    targetFocusedColor:string
+    greetings: string;
+    label: string;
+    targetFocusedColor: string;
 }
 
-/* import Feather from '@expo/vector-icons/Feather'; */
-export function HomeHeader({data,targetFocusedColor}:Props){
+export function HomeHeader({greetings, label, targetFocusedColor}:Props){
  
     return( 
         <View style={styles.container}>
-      {/* Fundo translúcido */}
-       {/*  <View
-          style={[
-            styles.absoluteFill,
-            { backgroundColor: targetFocusedColor, opacity: 0.5 },
-          ]}
-          /> */}
-     
+      <LinearGradient
+              colors={[`${targetFocusedColor}`, colors.gray[100]]} 
+              start={{ x: 0, y: 0 }} 
+              end={{ x: 0, y: 1 }}  
+              locations={[0.5, 1]}  
+              style={styles.absoluteFill}
 
-  <LinearGradient
-          colors={[`${targetFocusedColor}`, colors.gray[100]]} // CC = ~80% opacidade
-          start={{ x: 0, y: 0 }} // início do gradiente
-          end={{ x: 0, y: 1 }}   // fim do gradiente
-          locations={[0.5, 1]} // começa forte só a partir de 30% da altura
-          style={styles.absoluteFill}
-
-  />
+      />
       {/* Conteúdo */}
       <View style={styles.infoWrapper}>
         <View>
-          <Text style={styles.greetings}>{data.greetings}</Text>
-          <Text style={styles.label}>{data.label}</Text>
+          <Text style={styles.greetings}>{greetings}</Text>
+          <Text style={styles.label}>{label}</Text>
         </View>
 
         <TouchableOpacity

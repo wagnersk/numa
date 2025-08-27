@@ -8,6 +8,7 @@ import { colors, fontFamily } from '@/theme';
 import { Feather } from '@expo/vector-icons';
 import { UnsplashPhoto, UnsplashService } from '@/services/UnsplashService';
 import { useTargetStore } from '@/store/useTargetStore';
+import { useTranslations } from '@/libs/i18n';
 
 export default function GalleryScreen() {
   const [photos, setPhotos] = useState<UnsplashPhoto[]>([]);
@@ -15,6 +16,7 @@ export default function GalleryScreen() {
   const [keyword, setKeyword] = useState('');
   const photo = useTargetStore(state => state.tempTarget.photo);
   const router = useRouter();
+  const t = useTranslations();
 
   async function loadRandomPhotos() {
     setLoading(true);
@@ -58,7 +60,7 @@ export default function GalleryScreen() {
         <TouchableOpacity onPress={() => router.back()}>
           <Feather name="arrow-left" size={24} color={colors.black} />
         </TouchableOpacity>
-        <Text style={styles.title}>Selecione sua imagem</Text>
+        <Text style={styles.title}>{t.selectImage.title}</Text>
         <View style={{ width: 24 }} /> 
       </View>
 
@@ -66,7 +68,7 @@ export default function GalleryScreen() {
         <AntDesign name="search1" size={20} color={colors.black} style={styles.icon} />
         <TextInput
           style={styles.searchInput}
-          placeholder="Buscar"
+          placeholder={t.common.search}
           value={keyword}
           onChangeText={setKeyword}
           returnKeyType="search"

@@ -5,12 +5,12 @@ import { ToogleButton } from "./toogleButton"
 import { GridType1 } from "./GridType1"
 import { GridType2 } from "./GridType2"
 import { useState } from "react"
-import { TargetsData } from "@/store/useTargetStore"
+import { TargetByPercentageProps } from "@/store/useTargetStore"
 
  
  
 type Props = {
-    data:TargetsData[]
+    data:TargetByPercentageProps[]
    onFocusChange?: (id: string | null) => void; // callback opcional
 
 }
