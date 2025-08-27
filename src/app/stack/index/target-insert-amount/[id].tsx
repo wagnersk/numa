@@ -8,15 +8,13 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import BlurViewTargetInsertAmount from "@/components/BlurViewTargetInsertAmount";
 import { useCallback, useState, useRef } from "react";
 import { useTargetDatabase } from "@/database/useTargetDatabase";
-import { TartgetGridProps } from "@/components/TargetGrid";
-import { numberToCurrency } from "@/utils/numberToCurrency";
 import { getLocalPhotoUri } from "@/utils/getLocalPhotoUri";
 import { getContrastColor } from "@/utils/getContrastColor";
-import { useTargetStore } from "@/store/useTargetStore";
+import { TargetFormattedData, useTargetStore } from "@/store/useTargetStore";
 
 export default function TargetInsertAmount() {
   const params = useLocalSearchParams<{ id: string }>();
-  const [target, setTarget] = useState<TartgetGridProps | null>(null);
+  const [target, setTarget] = useState<TargetFormattedData | null>(null);
   const targetDatabase = useTargetDatabase();
   const { fetchFormattedTarget  } = useTargetStore();
 

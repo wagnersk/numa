@@ -81,6 +81,24 @@ export interface TargetFormData {
   photo_file_name: string | null;
 }
 
+
+export interface TargetFormattedData {
+    id: number;
+    target: string;
+    currency: string;
+    currencyType: string;
+    color: string;
+    end_date: number;
+    name: string;
+    percentage: number;
+    current: number;
+    start_date: number;
+    photo_color: string;
+    photo_blur_hash: string;
+    photo_direct_url: string;
+    photo_file_name: string;
+}
+
 // Store State and Actions interface
 interface TargetStoreState {
   tempTarget: TargetFormData;
@@ -92,7 +110,7 @@ interface TargetStoreState {
   initializeNewTarget: (db: ReturnType<typeof useTargetDatabase>) => Promise<void>;
 
   fetchTarget: (id: string, db: ReturnType<typeof useTargetDatabase>) => Promise<TargetData | null>;
-  fetchFormattedTarget: (id: string, db: ReturnType<typeof useTargetDatabase>) => Promise<TargetsData | null>;
+  fetchFormattedTarget: (id: string, db: ReturnType<typeof useTargetDatabase>) => Promise<TargetFormattedData | null>;
   fetchTargetsByPercentage: (db: ReturnType<typeof useTargetDatabase>) => Promise<TargetByPercentageProps[]>; 
 
   getAvailableColors: (db: ReturnType<typeof useTargetDatabase>) => Promise<string[]>;
