@@ -38,7 +38,10 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 12,
     left: 12,
-    borderRadius: 8,
+    borderBottomEndRadius:8,
+    borderBottomStartRadius:8,
+    borderTopEndRadius:8,
+
     overflow: "hidden",
   },
   blurContainer: {
