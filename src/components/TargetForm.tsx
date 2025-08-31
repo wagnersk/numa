@@ -81,9 +81,15 @@ export function TargetForm({
   useFocusEffect(
     useCallback(() => {
       async function loadData() {
-        const { id: currentIdInStore, isInitialized } = useTargetStore.getState();
+        const { isInitialized, tempTarget } = useTargetStore.getState();
 
-        if (editting && paramsId && String(currentIdInStore) !== paramsId) {
+        // Se já estamos editando e os dados no formulário são do mesmo item, não fazemos nada.
+        // Isso evita recarregar os dados ao voltar da seleção de foto/cor.
+        if (editting && paramsId && String(tempTarget.id) === paramsId) {
+          return;
+        }
+
+        if (editting && paramsId) {
           const fetchedData = await fetchTarget(paramsId, targetDatabase);
           if (fetchedData) {
             setTargetData({ ...fetchedData, photo: null });
