@@ -70,11 +70,6 @@ npm install
 
 ---
 
-
-| Tela inicial | Criação de meta | Dashboard |
-|--------------|----------------|-----------|
-| (img)        | (img)          | (img)     |
-
 ### 📸 Screenshots
 
 | 🏠 Tela Inicial | 🏠 Tela com meta escolhida | ✍️ Tela detalhes |
