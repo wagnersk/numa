@@ -70,11 +70,23 @@ npm install
 
 ---
 
-## 📸 Screenshots (em breve)
 
 | Tela inicial | Criação de meta | Dashboard |
 |--------------|----------------|-----------|
 | (img)        | (img)          | (img)     |
+
+### 📸 Screenshots
+
+| 🏠 Tela Inicial | 🏠 Tela com meta escolhida | ✍️ Tela detalhes |
+|---------------|----------------|--------------------------|
+|<img width="1206" height="2622" alt="Simulator Screenshot - iPhone 16 Pro - 2025-08-31 at 01 34 52" src="https://github.com/user-attachments/assets/ad0f7360-4150-4eb1-8817-85b0fec3e8d5" /> | <img width="1206" height="2622" alt="Simulator Screenshot - iPhone 16 Pro - 2025-08-31 at 01 35 12" src="https://github.com/user-attachments/assets/7ad9be7d-4924-46f7-be5e-7bebd5970749" /> | <img width="1206" height="2622" alt="Simulator Screenshot - iPhone 16 Pro - 2025-08-31 at 01 35 16" src="https://github.com/user-attachments/assets/cac7c598-b31e-40cf-aca4-42e6cc894bc2" />
+
+
+
+| 📊 Tela Nova meta | 📊 Tela com meta escolhida  | 📈 Análise |
+|-----------------|----------------------------|------------------|
+|  <img width="1206" height="2622" alt="Simulator Screenshot - iPhone 16 Pro - 2025-08-31 at 01 51 37" src="https://github.com/user-attachments/assets/e6ed8175-bc2a-41c0-b842-b7e8e033afcc" /> |  <img width="1206" height="2622" alt="Simulator Screenshot - iPhone 16 Pro - 2025-08-31 at 01 51 31" src="https://github.com/user-attachments/assets/1ce291fb-796e-4885-bc63-dc4a79cf3dae" /> |  <img width="1206" height="2622" alt="Simulator Screenshot - iPhone 16 Pro - 2025-08-31 at 01 51 43" src="https://github.com/user-attachments/assets/23a0cd79-da45-4858-adf7-4e40e582e84d" /> |
+
 
 ---
 
