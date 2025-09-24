@@ -18,10 +18,12 @@ const pt = {
         cancel: "Cancelar",
     },
     login: {
-        title: "Login",
+        title: "Entrar",
         subtitle: "Bem-vindo de volta! Sentimos sua falta.",
-        noAccount: "Não tem uma conta?",
-        createOne: "Crie uma",
+        createOneAccount: "Criar uma conta",
+        backToLogin: "Voltar ao login",
+        createPassword: "Senha",
+        name: "Nome",
     },
     signup: {
         title: "Criar Conta",
@@ -136,8 +138,10 @@ const en = {
     login: {
         title: "Login",
         subtitle: "Welcome back! We missed you.",
-        noAccount: "Don't have an account?",
-        createOne: "Create one",
+        createOneAccount: "Create one account",
+        backToLogin: "Back to login",
+        createPassword: "Password",
+        name: "Name",
     },
     signup: {
         title: "Create Account",
@@ -253,8 +257,10 @@ const es = {
     login: {
         title: "Iniciar Sesión",
         subtitle: "¡Bienvenido de nuevo! Te extrañamos.",
-        noAccount: "¿No tienes una cuenta?",
-        createOne: "Crea una",
+        createOneAccount: "Crea una cuenta",
+        backToLogin: "Volver al inicio de sesión",
+        createPassword: "Contraseña",
+        name: "Nombre",
     },
     signup: {
         title: "Crear Cuenta",
