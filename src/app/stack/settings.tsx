@@ -1,6 +1,6 @@
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Platform, KeyboardAvoidingView, ScrollView } from "react-native";
 import { colors } from "@/theme/colors";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Feather from "@expo/vector-icons/Feather";
@@ -66,6 +66,16 @@ export default function Settings() {
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: colors.gray[100] }}>
+                  <KeyboardAvoidingView
+                    behavior={Platform.OS === "ios" ? "padding" : undefined}
+                    style={styles.keyboardAvoiding}
+            >
+                   <ScrollView 
+                        contentContainerStyle={{ flexGrow: 1 }} 
+                        keyboardShouldPersistTaps="handled"
+                      >
+                        
+          
             <View style={styles.container}>
                 {/* Botão de voltar */}
 
@@ -164,6 +174,8 @@ export default function Settings() {
                     </TouchableOpacity>
                 </View>
             </View>
+                    </ScrollView>
+            </KeyboardAvoidingView>
         </SafeAreaView>
     );
 }
@@ -173,6 +185,11 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingHorizontal: 24,
     },
+   keyboardAvoiding: {
+    flex: 1,
+    paddingHorizontal: 24,
+    gap: 8,
+  },
     backButtonContainer: {
         flexDirection: 'row',
         alignItems: 'center',

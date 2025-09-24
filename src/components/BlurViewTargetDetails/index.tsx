@@ -3,11 +3,11 @@ import { BlurView } from 'expo-blur';
 
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { styles } from "./styles";
-import { colors, fontFamily } from "@/theme";
+import { colors, fontFamily } from "../../theme";
 import { AnimatedCircularProgress } from "react-native-circular-progress";
-import { formatTimestampDDMMYYYY } from "@/utils/formatTimestampDDMMYYYY";
+import { formatTimestampDDMMYYYY } from "../../utils/formatTimestampDDMMYYYY";
 import { router } from "expo-router";
-import { TargetByIdProps } from "@/store/useAnalysisStore";
+import { TargetByIdProps } from "../../store/useAnalysisStore";
 
 
 export type Props = {

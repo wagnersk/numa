@@ -3,14 +3,14 @@ import { TouchableOpacity, ImageBackground, StyleSheet, Animated } from "react-n
 import { BlurView } from 'expo-blur';
 import { Blurhash } from "react-native-blurhash";
 
-import { colors } from "@/theme";
+import { colors } from "../../../../theme";
 import AntDesign from '@expo/vector-icons/AntDesign';
-import BlurViewTargetDetails from "@/components/BlurViewTargetDetails";
+import BlurViewTargetDetails from "../../../../components/BlurViewTargetDetails";
 import { useCallback, useState, useRef } from "react";
-import { useTargetDatabase } from "@/database/useTargetDatabase";
-import { getLocalPhotoUri } from "@/utils/getLocalPhotoUri";
-import { getContrastColor } from "@/utils/getContrastColor";
-import { TargetByIdProps, useAnalysisStore } from "@/store/useAnalysisStore";
+import { useTargetDatabase } from "../../../../database/useTargetDatabase";
+import { getLocalPhotoUri } from "../../../../utils/getLocalPhotoUri";
+import { getContrastColor } from "../../../../utils/getContrastColor";
+import { TargetByIdProps, useAnalysisStore } from "../../../../store/useAnalysisStore";
 
 export default function TargetDetail() {
   const params = useLocalSearchParams<{ id: string }>();

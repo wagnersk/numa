@@ -4,11 +4,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StyleSheet } from "react-native";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { useRouter } from 'expo-router';
-import { colors, fontFamily } from '@/theme';
+import { colors, fontFamily } from '../../../theme';
 import { Feather } from '@expo/vector-icons';
-import { UnsplashPhoto, UnsplashService } from '@/services/UnsplashService';
-import { useTargetStore } from '@/store/useTargetStore';
-import { useTranslations } from '@/libs/i18n';
+import { UnsplashPhoto, UnsplashService } from '../../../services/UnsplashService';
+import { useTargetStore } from '../../../store/useTargetStore';
+import { useTranslations } from '../../../libs/i18n';
 
 export default function GalleryScreen() {
   const [photos, setPhotos] = useState<UnsplashPhoto[]>([]);
@@ -86,18 +86,50 @@ export default function GalleryScreen() {
           columnWrapperStyle={styles.flatlistStyle}
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) => (
-            <TouchableOpacity onPress={() => handleConfirm(item.id)}>
-              <Image source={{ uri: item.urls.small }} style={[styles.image,photo && photo.id ===item.id &&{
-                 borderWidth: 4 ,
-                 borderColor: colors.green[500],
-                 /* faz um shadow e ofset */
-                 shadowColor: colors.black,
-                 shadowOffset: { width: 0, height: 2 },
-                 shadowOpacity: 0.25,
-                 shadowRadius: 3.84,
-                
-                  }]} />
-            </TouchableOpacity>
+       <TouchableOpacity onPress={() => handleConfirm(item.id)}>
+        <View style={{ borderRadius: 12, overflow: 'hidden', position: 'relative', marginBottom: 18 }}>
+          <Image
+            source={{ uri: item.urls.small }}
+            style={[
+              { width: 160, height: 160 },
+              photo && photo.id === item.id && {
+                borderWidth: 4,
+                borderColor: colors.green[500],
+                shadowColor: colors.black,
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.25,
+                shadowRadius: 3.84,
+              },
+            ]}
+          />
+
+          {/* Overlay preto só na parte inferior da foto */}
+          <View
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              minHeight: 32, // suficiente para o texto completo
+              backgroundColor: 'rgba(0,0,0,0.4)',
+              justifyContent: 'center',
+              paddingHorizontal: 6,
+              paddingVertical: 4,
+            }}
+          >
+            <Text
+              style={{
+                color: '#fff',
+                fontWeight: 'bold',
+                fontSize: 12,
+              }}
+              numberOfLines={2} // garante que todo texto apareça, quebrando linha se necessário
+            >
+              Photo by {item.user.name} on Unsplash
+            </Text>
+          </View>
+        </View>
+      </TouchableOpacity>
           )}
         />
       )}

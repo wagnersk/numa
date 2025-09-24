@@ -9,28 +9,29 @@ import {
   Platform,
   StyleSheet,
   Image,
+  ScrollView,
 } from "react-native";
 
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import Feather from "@expo/vector-icons/Feather";
 
-import { colors } from "@/theme/colors";
-import { fontFamily } from "@/theme";
-import { CurrencyInput } from "@/components/CurrencyInput";
-import { Button } from "@/components/Button";
-import { formatDate } from "@/utils/formatDate";
+import { colors } from "../theme/colors";
+import { fontFamily } from "../theme";
+import { CurrencyInput } from "./CurrencyInput";
+import { Button } from "./Button";
+import { formatDate } from "../utils/formatDate";
 
 import { useFocusEffect, useRouter } from "expo-router";
-import { TargetFormData, useTargetStore } from "@/store/useTargetStore";
-import { useTargetDatabase } from "@/database/useTargetDatabase";
-import { useTransactionsDatabase } from "@/database/useTransactionsDatabase";
-import { usePhotosDatabase } from "@/database/usePhotosDatabase";
+import { TargetFormData, useTargetStore } from "../store/useTargetStore";
+import { useTargetDatabase } from "../database/useTargetDatabase";
+import { useTransactionsDatabase } from "../database/useTransactionsDatabase";
+import { usePhotosDatabase } from "../database/usePhotosDatabase";
 
 import { SafeAreaView } from "react-native-safe-area-context"; 
-import { addDays } from "@/utils/addDays";
-import { getLocalPhotoUri } from "@/utils/getLocalPhotoUri";
-import { currenciesArray } from "@/utils/currencyList";
-import { useTranslations } from "@/libs/i18n";
+import { addDays } from "../utils/addDays";
+import { getLocalPhotoUri } from "../utils/getLocalPhotoUri";
+import { currenciesArray } from "../utils/currencyList";
+import { useTranslations } from "../libs/i18n";
 
 interface TargetFormProps {
   editting:boolean
@@ -117,13 +118,21 @@ export function TargetForm({
   const handleSetDate = (key: 'start_date' | 'end_date', date: Date) => {
     setTargetData({ [key]: date.getTime() });
   };
-
+ 
   return (
      <SafeAreaView style={{ flex: 1, backgroundColor: colors.gray[100] }}>
       <KeyboardAvoidingView
         style={styles.keyboardAvoiding}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
+
       >
+         <ScrollView 
+        contentContainerStyle={{ flexGrow: 1 }} 
+        keyboardShouldPersistTaps="handled"
+      >
+        <View>
+
+ 
         {/* Header */}
         <View style={[styles.header, { justifyContent: editting ? "space-between":"center" }]}>
           {editting && 
@@ -331,7 +340,8 @@ export function TargetForm({
         {editting &&
         <Button title={t.common.delete} onPress={handleDelete} isProcessing={isLoading} type={'delete'}/>
         }
-        
+               </View>
+        </ScrollView>
       </KeyboardAvoidingView>
      </SafeAreaView>
 

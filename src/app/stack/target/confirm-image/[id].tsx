@@ -2,10 +2,10 @@ import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
-import { colors, fontFamily } from "@/theme";
-import { useTargetStore } from "@/store/useTargetStore";
+import { colors, fontFamily } from "../../../../theme";
+import { useTargetStore } from "../../../../store/useTargetStore";
 import { useEffect, useState } from "react";
-import { UnsplashPhoto, UnsplashService } from "@/services/UnsplashService";
+import { UnsplashPhoto, UnsplashService } from "../../../../services/UnsplashService";
 import { Blurhash } from "react-native-blurhash";
 
 export default function PreviewImage() {
@@ -16,7 +16,7 @@ export default function PreviewImage() {
   function handleSelectPhoto(photo: UnsplashPhoto) {
     setSelectedPhoto({ photo });
 
-    router.dismissAll();
+    router.back();
   }
 
   async function getSelectedPhoto(id: string) {
@@ -29,6 +29,7 @@ export default function PreviewImage() {
       getSelectedPhoto(params.id);
     }
   }, []);
+  console.log(JSON.stringify(getPhoto));
 
   return (
     <SafeAreaView style={styles.container}>
@@ -58,6 +59,13 @@ export default function PreviewImage() {
         </>
       }
       </View>
+
+      {/* Atribuição sem link */}
+      {getPhoto && (
+        <Text style={styles.credit}>
+          Photo by {getPhoto.user.name} on Unsplash
+        </Text>
+      )}
 
       <TouchableOpacity
         onPress={() => handleSelectPhoto(getPhoto!)}
@@ -112,5 +120,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: fontFamily.regular,
     color: colors.black,
+  }, 
+   credit: {
+    fontSize: 12,
+    color: colors.gray[700],
+    marginBottom: 16,
+    textAlign: "center",
   },
 });

@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, TextInput, StyleSheet, Alert, ActivityIndicator } from "react-native";
+import { View, Text, TouchableOpacity, TextInput, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, ScrollView, Platform } from "react-native";
 import { BlurView } from 'expo-blur';
 import Feather from '@expo/vector-icons/Feather';
 import { useState } from "react";
@@ -60,8 +60,17 @@ export default function BlurViewTargetInsertAmount({
       : t.insertAmount.withdrawQuestion;
 
   return (
+          <BlurView intensity={100} tint="light" style={styles.blurContent}>
+
+        <KeyboardAvoidingView 
+      style={{ flex: 1 }} 
+      behavior={Platform.OS === "ios" ? "padding" : "height"} // iOS sobe certinho
+    >
+      <ScrollView 
+        contentContainerStyle={{ flexGrow: 1 }} 
+        keyboardShouldPersistTaps="handled"
+      >
     <View style={styles.container}>
-      <BlurView intensity={100} tint="light" style={styles.blurContent}>
         <View style={styles.header}>
           <Text style={styles.goal}>{data.name}</Text>
           <Text style={styles.motivation}>{t.insertAmount.motivation}</Text>
@@ -69,7 +78,7 @@ export default function BlurViewTargetInsertAmount({
 
         <View style={styles.actions}>
           <TouchableOpacity
-            style={[styles.button, form.type === TransactionTypes.Input && { backgroundColor: colors.green[400] }]}
+            style={[styles.button, form.type === TransactionTypes.Input && { backgroundColor: colors.green[100] }]}
             onPress={() => handleEditTarget(TransactionTypes.Input)}
           >
             <Feather name="arrow-up" size={22} color="black" />
@@ -77,7 +86,7 @@ export default function BlurViewTargetInsertAmount({
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.button, form.type === TransactionTypes.Output && { backgroundColor: colors.red[400] }]}
+            style={[styles.button, form.type === TransactionTypes.Output && { backgroundColor: colors.red[100] }]}
             onPress={() => handleEditTarget(TransactionTypes.Output)}
           >
             <Feather name="arrow-down" size={22} color="black" />
@@ -116,6 +125,8 @@ export default function BlurViewTargetInsertAmount({
             onChangeText={(text) => setForm(prev => ({ ...prev, reason: text }))}
             multiline
             maxLength={maxChars}
+            
+       
           />
           <Text style={styles.charCount}>
             {form.reason.length}/{maxChars}
@@ -133,8 +144,11 @@ export default function BlurViewTargetInsertAmount({
             <Text style={styles.saveButtonText}>{t.common.save}</Text>
           )}
         </TouchableOpacity>
+          </View>
+        </ScrollView>
+       </KeyboardAvoidingView>
       </BlurView>
-    </View>
+
   );
 }
 
@@ -143,14 +157,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+     width: '100%',
+    padding: 24,
+    gap: 28,
   },
   blurContent: {
     flex: 1,
-    width: '100%',
-    padding: 24,
-    gap: 28,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   header: {
     alignItems: 'center',
