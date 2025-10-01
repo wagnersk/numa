@@ -74,7 +74,7 @@ export default function TargetDetail() {
       tint="dark"
       intensity={100} style={styles.backButton}>
         <TouchableOpacity onPress={router.back}>
-          <AntDesign name="arrowleft" size={24} color={colors.white} />
+          <AntDesign name="arrow-left" size={24} color={colors.white} />
         </TouchableOpacity>
       </BlurView>
 

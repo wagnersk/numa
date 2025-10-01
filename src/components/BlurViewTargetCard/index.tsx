@@ -34,6 +34,7 @@ export default function BlurViewTargetCard({
     }
  
  
+ 
     return (
         <View>
 
@@ -53,7 +54,7 @@ export default function BlurViewTargetCard({
                     intensity={800}
                     style={styles.squareBlurCircle1}>
                        <TouchableOpacity  activeOpacity={0.7} onPress={onDetails}>
-                            <AntDesign name="arrowsalt" size={24} color="black" />
+                            <AntDesign name="arrows-alt" size={24} color="black" />
                     </TouchableOpacity>
                 </BlurView>
 

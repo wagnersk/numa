@@ -82,7 +82,7 @@ export default function Settings() {
                 <View  style={styles.backButtonContainer} >
                     <View >
                         <TouchableOpacity style={styles.backButton} onPress={router.back}>
-                            <AntDesign name="arrowleft" size={24} color={colors.black} />
+                            <AntDesign name="arrow-left" size={24} color={colors.black} />
                         </TouchableOpacity>
                     </View>
 

@@ -1,4 +1,4 @@
-import * as FileSystem from 'expo-file-system';
+import { File, Directory, Paths } from 'expo-file-system';
 
 const BASE_URL = 'https://api.unsplash.com';
 const ACCESS_KEY = process.env.EXPO_PUBLIC_ACCESS_KEY;
@@ -65,7 +65,7 @@ export interface UnsplashSearchResponse {
 
 export const UnsplashService = {
 
-    async getPhotoById(id: string) {
+  async getPhotoById(id: string) {
     const res = await fetch(`${BASE_URL}/photos/${id}?client_id=${ACCESS_KEY}`);
     if (!res.ok) throw new Error('Erro ao buscar foto por ID');
     return res.json() as Promise<UnsplashPhoto>;
@@ -83,49 +83,66 @@ export const UnsplashService = {
     const data = await res.json() as UnsplashSearchResponse;
     return data.results;
   },
-
+ 
   async downloadPhoto(photo: UnsplashPhoto) {
-    // 1. Registrar o download no Unsplash
+    const { color, blur_hash } = photo;
 
-    const { color , blur_hash} = photo;
-    
-    const registerRes = await fetch(
-      `${photo.links.download_location}?client_id=${ACCESS_KEY}`
-    );
+    console.log("Photo ID:", photo.id);
+    console.log("Download location URL:", photo.links.download_location);
+
+    const registerRes = await fetch(`${photo.links.download_location}?client_id=${ACCESS_KEY}`);
     if (!registerRes.ok) throw new Error("Erro ao registrar download no Unsplash");
-    const { url } = await registerRes.json();
 
-    const direct_url = url
-    
+    const registerData = await registerRes.json();
+    const direct_url = registerData.url;
+    console.log("Direct download URL:", direct_url);
+
+    if (!direct_url) {
+      throw new Error("Direct URL está undefined!");
+    }
+
+    // 2. Criar diretório (idempotente para evitar erro se já existir)
+    const localDir = new Directory(Paths.document, 'unsplash_photos');
+    console.log("Local directory path:", localDir.uri);
+    localDir.create({ idempotent: true });
+
+    // 3. Criar arquivo com nome específico dentro do diretório
     const file_name = `${photo.id}.jpg`;
-    
-    const local_uri = `${FileSystem.documentDirectory}${file_name}`
+    const localFile = new File(localDir, file_name);
+    console.log("Local file path:", localFile.uri);
 
-    await FileSystem.downloadAsync(direct_url, local_uri);
+    // 4. Baixar o arquivo para esse File
+    const output = await File.downloadFileAsync(direct_url, localFile);
+    console.log("Download finished. Exists?", output.exists);
+    console.log("Downloaded file URI:", output.uri);
 
     return {
-      file_name: file_name,  
-      color: color,
-      blur_hash: blur_hash,
-      direct_url: direct_url,
-    }
+      file_name,
+      color,
+      blur_hash,
+      direct_url,
+      local_uri: localFile.uri,
+      exists: output.exists, // true se o download foi bem-sucedido
+    };
   },
 
   async deleteLocalPhoto(file_name: string | null) {
-  if (!file_name) return;
+    if (!file_name) return;
 
-  try {
-    const localUri = `${FileSystem.documentDirectory}${file_name}`;
-    
-    const fileInfo = await FileSystem.getInfoAsync(localUri);
-    if (fileInfo.exists) {
-      await FileSystem.deleteAsync(localUri, { idempotent: true });
-      console.log(`Foto deletada: ${file_name}`);
+    try {
+      // 1. Aponta para o diretório onde estão as fotos
+      const localDir = new Directory(Paths.document, 'unsplash_photos');
+      const file = new File(localDir, file_name);
+
+      // 2. Verifica se o arquivo existe
+      if (file.exists) {
+        file.delete(); // deleta o arquivo
+        console.log(`Foto deletada: ${file_name}`);
+      } else {
+        console.log(`Arquivo não encontrado: ${file_name}`);
+      }
+    } catch (error) {
+      console.log("Erro ao deletar foto local:", error);
     }
-  } catch (error) {
-    console.log("Erro ao deletar foto local:", error);
   }
-}
-  
-  
   }

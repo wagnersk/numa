@@ -202,7 +202,7 @@ export const useTargetStore = create<TargetStoreState>((set, get) => ({
 
   // Async Actions
 
-    fetchTargetsByPercentage: async (db) => {
+  fetchTargetsByPercentage: async (db) => {
       try {
         const userId = getUserId();
         const response = await db.listByPercentage(userId);
@@ -374,30 +374,117 @@ export const useTargetStore = create<TargetStoreState>((set, get) => ({
     if (targetData.current > targetData.target && targetData.current > 0 && targetData.target > 0) return Alert.alert(t.common.attention, t.alerts.invalidValues);
 
     set({ isLoading: true });
-    try {
-      const userId = getUserId();
-      if (editting) {
-        let photoData = null;
-        if (photo) {
-          photoData = await UnsplashService.downloadPhoto(photo);
-          await UnsplashService.deleteLocalPhoto(targetData.photo_file_name!);
-        }
-        await databases.targetDatabase.update({ id: targetData.id!, name: targetData.name, amount: targetData.target, currency: targetData.currency, color: color, end_date: targetData.end_date }, userId);
-        if (photoData) await databases.photosDatabase.update({ id: targetData.id!, file_name: photoData.file_name, color: photoData.color, blur_hash: photoData.blur_hash, direct_url: photoData.direct_url }, userId);
-        Alert.alert(t.common.success, t.alerts.targetUpdated, [{ text: t.common.ok, onPress: () => { get().resetStore(); router.push("/tabs"); } }]);
-      } else {
-        const photoData = await UnsplashService.downloadPhoto(photo!);
-        const targetId = await databases.targetDatabase.create({ user_id: userId, name: targetData.name, amount: targetData.target, currency: targetData.currency, color: color, start_date: targetData.start_date, end_date: targetData.end_date });
-        if (targetData.current > 0) await databases.transactionsDatabase.create({ user_id: userId, amount: targetData.current, target_id: targetId, observation: "Saldo inicial" });
-        await databases.photosDatabase.create({ user_id: userId, target_id: targetId, file_name: photoData.file_name, color: photoData.color, blur_hash: photoData.blur_hash, direct_url: photoData.direct_url });
-        Alert.alert(t.targetForm.newTitle, t.alerts.targetCreated, [{ text: t.common.ok, onPress: () => { get().resetStore(); router.push("/tabs"); } }]);
+ 
+try {
+  const userId = getUserId();
+  let photoData = null;
+
+  if (editting) {
+    // Atualização de target existente
+    if (photo && photo.id) {
+      // Baixa a nova foto
+      photoData = await UnsplashService.downloadPhoto(photo);
+
+      // Deleta a foto antiga se existir
+      if (targetData.photo_file_name) {
+        await UnsplashService.deleteLocalPhoto(targetData.photo_file_name);
       }
-    } catch (error) {
-      console.log(error);
-      Alert.alert(t.common.error, editting ? t.alerts.targetUpdateError : t.alerts.targetCreateError);
-    } finally {
-      set({ isLoading: false });
     }
+
+    // Atualiza os dados do target
+    await databases.targetDatabase.update(
+      {
+        id: targetData.id!,
+        name: targetData.name,
+        amount: targetData.target,
+        currency: targetData.currency,
+        color: color,
+        end_date: targetData.end_date,
+      },
+      userId
+    );
+
+    // Atualiza a foto no banco se houve download de nova foto
+    if (photoData) {
+      await databases.photosDatabase.update(
+        {
+          id: targetData.id!,
+          file_name: photoData.file_name,
+          color: photoData.color,
+          blur_hash: photoData.blur_hash,
+          direct_url: photoData.direct_url,
+        },
+        userId
+      );
+    }
+
+    Alert.alert(t.common.success, t.alerts.targetUpdated, [
+      {
+        text: t.common.ok,
+        onPress: () => {
+          get().resetStore();
+          router.push("/tabs");
+        },
+      },
+    ]);
+
+  } else {
+    // Criação de novo target
+    if (photo && photo.id) {
+      photoData = await UnsplashService.downloadPhoto(photo);
+    }
+
+    const targetId = await databases.targetDatabase.create({
+      user_id: userId,
+      name: targetData.name,
+      amount: targetData.target,
+      currency: targetData.currency,
+      color: color,
+      start_date: targetData.start_date,
+      end_date: targetData.end_date,
+    });
+
+    if (targetData.current > 0) {
+      await databases.transactionsDatabase.create({
+        user_id: userId,
+        amount: targetData.current,
+        target_id: targetId,
+        observation: "Saldo inicial",
+      });
+    }
+
+    // Salva a foto no banco apenas se houver photoData válido
+    if (photoData) {
+      await databases.photosDatabase.create({
+        user_id: userId,
+        target_id: targetId,
+        file_name: photoData.file_name,
+        color: photoData.color,
+        blur_hash: photoData.blur_hash,
+        direct_url: photoData.direct_url,
+      });
+    }
+
+    Alert.alert(t.targetForm.newTitle, t.alerts.targetCreated, [
+      {
+        text: t.common.ok,
+        onPress: () => {
+          get().resetStore();
+          router.push("/tabs");
+        },
+      },
+    ]);
+  }
+} catch (error) {
+  console.log(error);
+  Alert.alert(
+    t.common.error,
+    editting ? t.alerts.targetUpdateError : t.alerts.targetCreateError
+  );
+} finally {
+  set({ isLoading: false });
+}
+
   },
 
   deleteTarget: async (databases) => {

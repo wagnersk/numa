@@ -65,7 +65,7 @@ export default function GalleryScreen() {
       </View>
 
       <View style={styles.searchContainer}>
-        <AntDesign name="search1" size={20} color={colors.black} style={styles.icon} />
+        <AntDesign name="search" size={20} color={colors.black} style={styles.icon} />
         <TextInput
           style={styles.searchInput}
           placeholder={t.common.search}
