@@ -36,13 +36,13 @@ export function TargetGrid({
                 
             }}>
                 <ToogleButton 
-                onPress={handleChangeGridMode}
-                gridMode={gridMode}
+                    onPress={handleChangeGridMode}
+                    gridMode={gridMode}
                 />
                 { 
                 gridMode ? 
                 <GridType1 data={data}
-                 onFocusChange={(id) => onFocusChange(id)}
+                    onFocusChange={(id) => onFocusChange(id)}
 
                  />
                 :

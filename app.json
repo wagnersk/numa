@@ -8,13 +8,16 @@
       "package": "com.wagner.numa",
       "edgeToEdgeEnabled": true,
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/adaptive-new-icon.png",
         "backgroundColor": "#D2D2D2"
       }
     },
     "ios": {
       "bundleIdentifier": "com.wagner.numa",
-      "icon": "./assets/ios-icon.png"
+      "icon": "./assets/ios-new-icon.png",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "plugins": [
       "expo-router",

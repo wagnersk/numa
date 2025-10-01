@@ -31,10 +31,10 @@ export default function RegisterScreen() {
   const userDatabase = useUserDatabase();
   const sessionDatabase = useSessionDatabase();
   const { register, isLoading } = useUserStore();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const [ name, setName ] = useState("");
+  const [ email, setEmail] = useState("");
+  const [ password, setPassword] = useState("");
+  const [ showPassword, setShowPassword] = useState(false);
   const t = useTranslations();
 
   return (
@@ -48,15 +48,12 @@ export default function RegisterScreen() {
           style={styles.container}
           behavior={Platform.OS === "ios" ? "padding" : "height"}
         >
-          {/* TOPO - LOGO */}
           <View style={styles.header}>
             <Image source={NumaLogo} style={styles.logo} resizeMode="contain" />
           </View>
 
-          {/* CENTRO - FORM */}
           <View style={styles.content}>
             <View style={styles.form}>
-              {/* Nome */}
               <BlurView intensity={20} tint="dark" style={styles.inputWrapper}>
                 <Ionicons
                   name="person-outline"
@@ -74,7 +71,6 @@ export default function RegisterScreen() {
                 />
               </BlurView>
 
-              {/* Email */}
               <BlurView intensity={20} tint="dark" style={styles.inputWrapper}>
                 <Ionicons
                   name="mail-outline"
@@ -140,7 +136,6 @@ export default function RegisterScreen() {
             />
           </View>
 
-          {/* RODAPÉ */}
           <BlurView intensity={40} tint="light" style={styles.blurBox}>
             <View style={styles.footer}>
               <TouchableOpacity
