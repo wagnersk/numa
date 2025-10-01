@@ -1,4 +1,4 @@
-import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, Image, StyleSheet, TouchableOpacity,Linking } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
@@ -31,6 +31,8 @@ export default function PreviewImage() {
   }, []);
   console.log(JSON.stringify(getPhoto));
 
+
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -60,12 +62,39 @@ export default function PreviewImage() {
       }
       </View>
 
-      {/* Atribuição sem link */}
-      {getPhoto && (
-        <Text style={styles.credit}>
-          Photo by {getPhoto.user.name} on Unsplash
-        </Text>
-      )}
+       {/* Créditos com link */}
+                
+        {getPhoto && (
+          <Text style={styles.credit}>
+            Foto por{" "}
+            <Text
+              style={styles.link}
+              onPress={() =>
+                Linking.openURL(
+                  `${getPhoto.user.links.html}?utm_source=numa&utm_medium=referral`
+                )
+              }
+            >
+              {getPhoto.user.name}
+            </Text>{" "}
+            no{" "}
+            <Text
+              style={styles.link}
+              onPress={() =>
+                Linking.openURL(
+                  `${getPhoto.links.html}?utm_source=numa&utm_medium=referral`
+                )
+              }
+            >
+              Unsplash
+            </Text>
+          </Text>
+        )}
+
+
+ 
+
+      {console.log(JSON.stringify(getPhoto))}
 
       <TouchableOpacity
         onPress={() => handleSelectPhoto(getPhoto!)}
@@ -127,4 +156,9 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     textAlign: "center",
   },
+  link: {
+  color: "#007AFF",        // azul padrão de link
+  textDecorationLine: "underline", // sublinhado para parecer hiperlink
+  fontWeight: "500",       // deixa um pouco mais forte
+},
 });

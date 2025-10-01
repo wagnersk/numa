@@ -17,7 +17,8 @@
       "icon": "./assets/ios-new-icon.png",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
-      }
+      },
+      "automaticBuildNumber": true,
     },
     "plugins": [
       "expo-router",
