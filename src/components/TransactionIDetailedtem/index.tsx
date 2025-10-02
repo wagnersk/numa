@@ -52,7 +52,7 @@ export default function TransactionDetailedItem({ item }: { item: TransactionAll
         <View style={styles.amountRow}>
           <Text style={styles.amount}>{item.value}</Text>
           {item.type === "input" ? (
-            <AntDesign name="arro-wup" size={16} color={colors.green[400]} />
+            <AntDesign name="arrow-up" size={16} color={colors.green[400]} />
           ) : (
             <AntDesign name="arrow-down" size={16} color={colors.red[400]} />
           )}
