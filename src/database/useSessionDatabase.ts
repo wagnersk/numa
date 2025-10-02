@@ -1,8 +1,10 @@
 import { useSQLiteContext } from "expo-sqlite";
+import { useUserDatabase } from "./useUserDatabase";
 
 export type SessionUser = {
     id: number
 }
+
 
 export function useSessionDatabase() {
     const database = useSQLiteContext();
@@ -24,6 +26,16 @@ export function useSessionDatabase() {
     async function clear() {
         await database.runAsync('DELETE FROM session');
     }
+
+    async function deleteAccount(userDb: ReturnType<typeof useUserDatabase>) {
+        const userId = await get();
+        if (userId) {
+            await userDb.delete(userId);
+            await clear();
+        }
+    }
+
+
 
     return { save, get, clear };
 }

@@ -14,6 +14,7 @@ type UserState = {
 
   login: (email: string, password: string, userDb: ReturnType<typeof useUserDatabase>, sessionDb: ReturnType<typeof useSessionDatabase>) => Promise<void>;
   logout: (sessionDb: ReturnType<typeof useSessionDatabase>) => Promise<void>;
+  deleteAccount: (userDb: ReturnType<typeof useUserDatabase>, sessionDb: ReturnType<typeof useSessionDatabase>) => Promise<void>;
   register: (name: string, email: string, password: string, language: Language, userDb: ReturnType<typeof useUserDatabase>, sessionDb: ReturnType<typeof useSessionDatabase>) => Promise<void>;
   updateProfile: (id: number, data: { name?: string; email?: string; password?: string; language?: Language }, userDb: ReturnType<typeof useUserDatabase>) => Promise<void>;
   checkSession: (userDb: ReturnType<typeof useUserDatabase>, sessionDb: ReturnType<typeof useSessionDatabase>) => Promise<void>;
@@ -62,6 +63,25 @@ export const useUserStore = create<UserState>((set, get) => ({
     await sessionDb.clear();
     set({ user: null, isAuthenticated: false, isLoading: false });
     router.replace("/auth/login");
+  },
+  deleteAccount: async (userDb, sessionDb) => {
+    const user = get().user;
+    if (!user) return;
+
+    set({ isLoading: true });
+    try {
+      const t = i18n[user.language];
+      await userDb.remove(user.id);
+      await sessionDb.clear();
+      set({ user: null, isAuthenticated: false });
+      Alert.alert(t.common.success, t.alerts.accountDeleted);
+      router.replace("/auth/login"); // Navigate after user acknowledges the alert
+    } catch (error) {
+      console.log(error);
+      Alert.alert(i18n[user.language].common.error, i18n[user.language].alerts.accountDeleteError);
+    } finally {
+      set({ isLoading: false });
+    }
   },
 
   register: async (name, email, password, language, userDb, sessionDb) => {

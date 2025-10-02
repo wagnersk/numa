@@ -3,7 +3,7 @@ PODS:
   - DoubleConversion (1.1.6)
   - EXConstants (18.0.9):
     - ExpoModulesCore
-  - Expo (54.0.11):
+  - Expo (54.0.12):
     - boost
     - DoubleConversion
     - ExpoModulesCore
@@ -44,7 +44,7 @@ PODS:
     - ExpoModulesCore
   - ExpoFont (14.0.8):
     - ExpoModulesCore
-  - ExpoHead (6.0.9):
+  - ExpoHead (6.0.10):
     - ExpoModulesCore
     - RNScreens
   - ExpoKeepAwake (15.0.7):
@@ -53,7 +53,7 @@ PODS:
     - ExpoModulesCore
   - ExpoLinking (8.0.8):
     - ExpoModulesCore
-  - ExpoModulesCore (3.0.19):
+  - ExpoModulesCore (3.0.20):
     - boost
     - DoubleConversion
     - fast_float
@@ -3098,17 +3098,17 @@ SPEC CHECKSUMS:
   boost: 7e761d76ca2ce687f7cc98e698152abd03a18f90
   DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
   EXConstants: a95804601ee4a6aa7800645f9b070d753b1142b3
-  Expo: 674fb719cc0ce85e81cfd90cb2ba0de27ad1617a
+  Expo: 23ccb39e5634a804e08416627c991ac8a1f61464
   ExpoAsset: 9ba6fbd677fb8e241a3899ac00fa735bc911eadf
   ExpoBlur: 2dd8f64aa31f5d405652c21d3deb2d2588b1852f
   ExpoCrypto: c1fbce112d1b6b79652bbe380b4fd4cc91676595
   ExpoFileSystem: f4bf6bac4ede3b6671c22777f01102a02a028412
   ExpoFont: 86ceec09ffed1c99cfee36ceb79ba149074901b5
-  ExpoHead: 903ed9ea60da1e0fd13fdd885ea697f27df7ef92
+  ExpoHead: b1843315be5ef6751b4ecb2404b3effffbb33d96
   ExpoKeepAwake: 1a2e820692e933c94a565ec3fbbe38ac31658ffe
   ExpoLinearGradient: a464898cb95153125e3b81894fd479bcb1c7dd27
   ExpoLinking: f051f28e50ea9269ff539317c166adec81d9342d
-  ExpoModulesCore: d25fb87a1c9e9be27f8c3b5b20f18d2f8d7bfcb4
+  ExpoModulesCore: 43fd4079c6e9b5b30adf35c29de60d49cf9a6389
   ExpoSQLite: 7fa091ba5562474093fef09be644161a65e11b3f
   fast_float: b32c788ed9c6a8c584d114d0047beda9664e7cc6
   FBLazyVector: 941bef1c8eeabd9fe1f501e30a5220beee913886

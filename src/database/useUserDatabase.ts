@@ -71,5 +71,9 @@ export function useUserDatabase() {
     return database.getFirstAsync<User>('SELECT id, name, email, language FROM users WHERE id = ?', [id]);
   }
 
-  return { create, update, findByEmail, findById };
+  async function remove(id: number) {
+    await database.runAsync('DELETE FROM users WHERE id = ?', [id]);
+  }
+
+  return { create, update, findByEmail, findById, remove };
 }

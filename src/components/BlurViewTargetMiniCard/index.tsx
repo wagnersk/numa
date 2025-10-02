@@ -36,7 +36,7 @@ export default function BlurViewTargetMiniCard({
                     intensity={800}
                     style={styles.openEditTarget}>
                        <TouchableOpacity activeOpacity={0.7} onPress={onDetails}>
-                            <AntDesign name="arrowsalt" size={24} color="black" />
+                            <AntDesign name="arrows-alt" size={24} color="black" />
                     </TouchableOpacity>
                 </BlurView>
 

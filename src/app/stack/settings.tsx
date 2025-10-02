@@ -10,10 +10,10 @@ import { useUserStore } from "@/store/useUserStore";
 import { Language, useUserDatabase } from "@/database/useUserDatabase";
 import { useSessionDatabase } from "@/database/useSessionDatabase";
 import { Button } from "@/components/Button";
-import { useTranslations } from "@/libs/i18n";
+import { i18n, useTranslations } from "@/libs/i18n";
 
 export default function Settings() {
-    const { user, logout, updateProfile, isLoading } = useUserStore();
+    const { user, logout, updateProfile, isLoading, deleteAccount } = useUserStore();
     const userDatabase = useUserDatabase();
     const sessionDatabase = useSessionDatabase();
 
@@ -59,8 +59,15 @@ export default function Settings() {
     }
 
     function handleDeleteAccount() {
-        // Aqui você pode implementar a lógica para deletar a conta do usuário
-        console.log('Conta deletada');
+        const t = i18n[language];
+        Alert.alert(
+            t.settings.deleteAccount,
+            t.alerts.confirmAccountDelete,
+            [
+                { text: t.common.cancel, style: 'cancel' },
+                { text: t.common.delete, style: 'destructive', onPress: () => deleteAccount(userDatabase, sessionDatabase) }
+            ]
+        );
     }
 
 

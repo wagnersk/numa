@@ -113,9 +113,12 @@ const pt = {
         targetCreated: "Meta criada com sucesso!",
         targetUpdateError: "Ocorreu um erro ao atualizar a meta.",
         targetCreateError: "Ocorreu um erro ao criar a meta.",
-        confirmDelete: "Tem certeza que deseja excluir esta meta? Todas as transações relacionadas também serão excluídas.",
+        confirmDelete: "Tem certeza que deseja excluir esta meta? Todas as transações relacionadas também serão excluídas.", // For goals
         targetDeleted: "Meta excluída com sucesso.",
         targetDeleteError: "Ocorreu um erro ao excluir a meta.",
+        confirmAccountDelete: "Tem certeza que deseja excluir sua conta? Esta ação é irreversível e todos os seus dados serão perdidos.",
+        accountDeleted: "Sua conta foi excluída com sucesso.",
+        accountDeleteError: "Ocorreu um erro ao excluir sua conta.",
     }
 };
 
@@ -231,9 +234,12 @@ const en = {
         targetCreated: "Goal created successfully!",
         targetUpdateError: "An error occurred while updating the goal.",
         targetCreateError: "An error occurred while creating the goal.",
-        confirmDelete: "Are you sure you want to delete this goal? All related transactions will also be deleted.",
+        confirmDelete: "Are you sure you want to delete this goal? All related transactions will also be deleted.", // For goals
         targetDeleted: "Goal deleted successfully.",
         targetDeleteError: "An error occurred while deleting the goal.",
+        confirmAccountDelete: "Are you sure you want to delete your account? This action is irreversible and all your data will be lost.",
+        accountDeleted: "Your account has been deleted successfully.",
+        accountDeleteError: "An error occurred while deleting your account.",
     }
 };
 
@@ -350,9 +356,12 @@ const es = {
         targetCreated: "¡Meta creada con éxito!",
         targetUpdateError: "Ocurrió un error al actualizar la meta.",
         targetCreateError: "Ocurrió un error al crear la meta.",
-        confirmDelete: "¿Estás seguro de que deseas eliminar esta meta? Todas las transacciones relacionadas también se eliminarán.",
+        confirmDelete: "¿Estás seguro de que deseas eliminar esta meta? Todas las transacciones relacionadas también se eliminarán.", // For goals
         targetDeleted: "Meta eliminada con éxito.",
         targetDeleteError: "Ocurrió un error al eliminar la meta.",
+        confirmAccountDelete: "¿Estás seguro de que quieres eliminar tu cuenta? Esta acción es irreversible y todos tus datos se perderán.",
+        accountDeleted: "Tu cuenta ha sido eliminada con éxito.",
+        accountDeleteError: "Ocurrió un error al eliminar tu cuenta.",
     }
 };
 
